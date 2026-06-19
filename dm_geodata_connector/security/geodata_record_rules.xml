@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo noupdate="1">
+
+    <!-- Ізоляція по компаніях (AUDIT #4). Глобальні записи (company_id=False)
+         видимі всім; прив'язані записи — лише своїй компанії. -->
+    <record id="geodata_address_company_rule" model="ir.rule">
+        <field name="name">dm.geodata.address multi-company</field>
+        <field name="model_id" ref="model_dm_geodata_address"/>
+        <field name="domain_force">
+            ['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]
+        </field>
+    </record>
+
+    <record id="geodata_api_credential_company_rule" model="ir.rule">
+        <field name="name">dm.geodata.api.credential multi-company</field>
+        <field name="model_id" ref="model_dm_geodata_api_credential"/>
+        <field name="domain_force">
+            ['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]
+        </field>
+    </record>
+
+    <record id="geodata_request_log_company_rule" model="ir.rule">
+        <field name="name">dm.geodata.request.log multi-company</field>
+        <field name="model_id" ref="model_dm_geodata_request_log"/>
+        <field name="domain_force">
+            ['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]
+        </field>
+    </record>
+
+</odoo>

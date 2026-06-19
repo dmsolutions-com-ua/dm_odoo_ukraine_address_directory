@@ -1,0 +1,2 @@
+curl --location 'https://api.dmsolutions.com.ua:2661/api/Streets?sRequest=%D1%8F%D1%80%D0%BE%D1%81%D0%BB%D0%B0%D0%B2&stMoniker=91f255bc-f7f6-4266-87fe-d23cca5917e8&sLang=uk_UA' \
+--header 'Authorization: Bearer {{token}}'

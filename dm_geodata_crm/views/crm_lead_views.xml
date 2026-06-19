@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="crm_lead_view_form_geodata" model="ir.ui.view">
+        <field name="name">crm.lead.form.geodata</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Приховані контрольні поля перед адресним блоком (ліда) -->
+            <xpath expr="//div[hasclass('o_address_format')]" position="before">
+                <field name="has_geodata_credential" invisible="1"/>
+                <field name="geodata_autocomplete_active" invisible="1"/>
+                <field name="geodata_address_id" invisible="1"/>
+                <field name="geodata_city_moniker" invisible="1"/>
+                <field name="geodata_street_moniker" invisible="1"/>
+                <field name="geodata_show_manual_hint" invisible="1"/>
+                <field name="geodata_city_verified" invisible="1"/>
+                <field name="geodata_street_verified" invisible="1"/>
+                <field name="country_code" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//div[hasclass('o_address_format')]" position="attributes">
+                <attribute name="class" add="o_geodata_address_grid" separator=" "/>
+            </xpath>
+
+            <xpath expr="//div[hasclass('o_address_format')]//field[@name='city']" position="attributes">
+                <attribute name="widget">geodata_autocomplete</attribute>
+                <attribute name="options">{
+                    'source_method': 'geodata_autocomplete_cities',
+                    'on_select_method': 'apply_address',
+                    'verified_field': 'geodata_city_verified',
+                    'hint_field': 'geodata_show_manual_hint',
+                    'min_chars': 3
+                }</attribute>
+            </xpath>
+
+            <xpath expr="//div[hasclass('o_address_format')]//field[@name='street']" position="attributes">
+                <attribute name="widget">geodata_autocomplete</attribute>
+                <attribute name="options">{
+                    'source_method': 'geodata_autocomplete_streets',
+                    'on_select_method': 'apply_address',
+                    'verified_field': 'geodata_street_verified',
+                    'hint_field': 'geodata_show_manual_hint',
+                    'min_chars': 3
+                }</attribute>
+            </xpath>
+
+            <xpath expr="//div[hasclass('o_address_format')]//field[@name='state_id']" position="after">
+                <field name="area" class="o_geodata_addr_col" readonly="1" force_save="1"
+                       invisible="country_code != 'UA'"/>
+                <field name="hromada" class="o_geodata_addr_col" readonly="1" force_save="1"
+                       invisible="country_code != 'UA'"/>
+            </xpath>
+
+            <!-- Сторінка «Адресна інформація» (форма ліда має notebook). -->
+            <xpath expr="//notebook" position="inside">
+                <page name="geodata_page" string="Address Information"
+                      invisible="country_code != 'UA' or not has_geodata_credential">
+                    <div class="border border-primary rounded p-2 mb-2">
+                        <field name="geodata_search"
+                               widget="geodata_autocomplete"
+                               placeholder="Search Address (Region, City, Street, House)..."
+                               options="{
+                                   'source_method': 'geodata_autocomplete_full_address',
+                                   'on_select_method': 'apply_address',
+                                   'progressive': True,
+                                   'min_chars': 3
+                               }"
+                               class="oe_edit_only"/>
+                    </div>
+                    <group string="Address details">
+                        <field name="geodata_address_id" readonly="1" force_save="1"/>
+                        <field name="geodata_kato" string="KATOTTG" widget="CopyClipboardChar"/>
+                        <field name="geodata_koatuu" string="KOATUU" widget="CopyClipboardChar"/>
+                    </group>
+                    <group string="Full Addresses">
+                        <field name="geodata_address_full_ua" string="Document (UA)"
+                               widget="CopyClipboardChar"/>
+                        <field name="geodata_address_letter_ua" string="Letter (UA)"
+                               widget="CopyClipboardChar"/>
+                    </group>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

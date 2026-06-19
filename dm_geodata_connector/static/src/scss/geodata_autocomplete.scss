@@ -1,0 +1,130 @@
+.o_geodata_autocomplete {
+    // Заповнюємо комірку поля як звичайний input, щоб поля з віджетом
+    // (місто / "Вулиця 1") мали ту саму ширину, що й звичайне поле ("Вулиця 2").
+    display: block;
+    width: 100%;
+
+    .o_input {
+        width: 100%;
+    }
+
+    // Ідентично до рідної автопідказки Many2one: перевикористовуємо власні класи
+    // Odoo `o-autocomplete--dropdown-menu`/`o-autocomplete--dropdown-item`
+    // (+Bootstrap `dropdown-menu`/`dropdown-item`, `text-truncate`, активний
+    // `focus`), тож фон/рамка/hover/active беруться з активної теми. Додаємо лише
+    // функціональні правила: тримати поверх форми й розмір за найдовшою міткою.
+    .o_geodata_suggestions {
+        z-index: 1050;
+        max-height: 280px;
+        overflow-y: auto;
+        margin-top: 2px;
+        // Ширина за найдовшою підказкою, але не вужче за поле. Без сталого
+        // верхнього ліміту — єдине обмеження зверху ставить JS
+        // (_positionSuggestions): інлайн max-width = доступний простір вьюпорта,
+        // плюс вибір сторони (ліворуч/праворуч), щоб список не вилазив за екран.
+        min-width: 100%;
+        width: max-content;
+    }
+
+    // Поведінка курсора як у рідних списках Odoo: елементи — це текст, тож без цих
+    // правил браузер показує то «стрілку» (над відступами), то «текстову каретку»
+    // (над символами), а старт виділення тексту на mousedown «з'їдає» click і
+    // елемент не вибирається. Власні пункти Odoo — це `<a>` (завжди pointer,
+    // невиділювані); відтворюємо те саме на наших `<li>`. Разом із
+    // `mousedown.preventDefault` у шаблоні (тримає фокус на input, не дає почати
+    // виділення) клік завжди обирає елемент.
+    .o_geodata_suggestions__item {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    // Видиме підсвічування для hover ТА навігації з клавіатури (активний елемент
+    // має `focus`). Odoo НЕ видає CSS-змінні Bootstrap `--bs-dropdown-*`, тож
+    // використовуємо Sass-змінні часу компіляції — саме те, що core-автопідказка
+    // використовує для `a.ui-state-active` (web/.../autocomplete.scss).
+    .o_geodata_suggestions__item:hover,
+    .o_geodata_suggestions__item.focus {
+        color: $dropdown-link-hover-color;
+        background-color: $dropdown-link-hover-bg;
+    }
+
+    // Введене вручну (непідтверджене) непорожнє значення: одна амбер-іконка
+    // інформації праворуч (без рамки). Відступ тримає текст подалі від іконки.
+    &.o_geodata_manual .o_input {
+        padding-right: 1.4rem;
+    }
+
+    .o_geodata_manual_icon {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: auto;
+        cursor: help;
+        color: #d97706; // амбер — «не підтверджено», не помилка
+    }
+}
+
+// Значення поля «Адреса Geodata» (readonly many2one) оформлюємо як web-посилання:
+// нативний m2o уже рендериться як клікабельний <a>, що відкриває картку адреси —
+// додаємо лише підкреслення, щоб візуально читалось як посилання.
+.o_geodata_address_link a {
+    text-decoration: underline;
+}
+
+// Деталі адреси (вкладка «Інформація про адресу»): дві HTML-колонки з
+// таблицями width:100%. Без min-width:0 на grid-комірці inner-group таблиця не
+// стискається й «колонка 2» наїжджає на «колонку 1» при звуженні вікна. Робимо
+// комірки стисливими, а таблиці/вміст — переносними (як стискаються Char-поля
+// «для документів/конвертів»).
+.o_geodata_details_row {
+    .o_cell, .o_wrap_field, .o_field_widget { min-width: 0; }
+    table { table-layout: fixed; width: 100%; max-width: 100%; }
+    td { overflow-wrap: anywhere; }
+}
+
+// Форма «Адреси (Geodata)»: мітка/значення = 50%/50% (inner-group = CSS grid),
+// бо українські назви полів довгі й переносяться на 2-3 рядки.
+.o_geodata_address_form .o_inner_group {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+// Район / Громада — вставлені поля адресного блоку: половина ширини, поряд.
+.o_form_editable .o_address_format .o_geodata_addr_col {
+    display: inline-block;
+    width: 48%;
+    margin-right: 2%;
+    vertical-align: top;
+}
+.o_form_editable .o_address_format .o_geodata_addr_col:last-of-type {
+    margin-right: 0;
+}
+
+// Детермінований ПОРЯДОК полів адресного блоку: Місто, Область, Район, Громада,
+// Індекс, Країна.
+// Web-рендерер o_address_format сам переставляє відомі поля за форматом адреси
+// (street, city, state, zip, country). Клас o_geodata_address_grid додається на
+// div.o_address_format у bridge-формах (contact/crm/company).
+//
+// ВАЖЛИВО: `order` задаємо за атрибутом `name` ПРЯМИХ flex-дітей, а не за класами
+// o_address_*. Причина: country рендериться у обгортці
+// <div name="partner_address_country"> БЕЗ класу o_address_country — клас лежить
+// на вкладеному div, тож правило за класом не дістає реального flex-елемента, і
+// країна «стрибала» вгору (order:0). Атрибут name — на самому flex-елементі.
+.o_form_editable .o_address_format.o_geodata_address_grid {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+
+    > .o_address_street { flex: 0 0 100%; order: 0; } // street + street2 — свої рядки
+    > .o_address_city { order: 1; }
+    > .o_address_state { order: 2; }
+    > [name="area"] { order: 3; }    // Район
+    > [name="hromada"] { order: 4; } // Громада
+    > .o_address_zip { order: 5; }   // Індекс
+    // Країна — ПРАВОРУЧ від Індексу (на тому ж рядку), flex:1 1 50%.
+    // Country може бути обгорнута (<div name="partner_address_country">), тоді клас
+    // o_address_country лежить на вкладеному div — покриваємо й обгортку через :has.
+    > .o_address_country,
+    > :has(> .o_address_country) { flex: 1 1 50%; min-width: 0; order: 6; }
+}

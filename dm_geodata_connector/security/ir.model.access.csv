@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_geodata_address_internal,dm.geodata.address internal read,model_dm_geodata_address,base.group_user,1,0,0,0
+access_geodata_address_user,dm.geodata.address user,model_dm_geodata_address,group_geodata_user,1,1,1,0
+access_geodata_address_manager,dm.geodata.address manager,model_dm_geodata_address,group_geodata_manager,1,1,1,1
+access_geodata_api_credential_manager,dm.geodata.api.credential manager,model_dm_geodata_api_credential,group_geodata_manager,1,1,1,1
+access_geodata_request_log_user,dm.geodata.request.log user,model_dm_geodata_request_log,group_geodata_user,1,0,0,0
+access_geodata_request_log_manager,dm.geodata.request.log manager,model_dm_geodata_request_log,group_geodata_manager,1,1,1,1

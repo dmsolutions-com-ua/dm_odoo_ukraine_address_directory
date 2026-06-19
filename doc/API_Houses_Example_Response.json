@@ -1,0 +1,30 @@
+[
+  {
+    "HouseId": 326381,
+    "HouseNum": "8",
+    "HouseNumAdd": null,
+    "Index_": "01054",
+    "Lat": "50.449509",
+    "Long": "30.512270",
+    "CityDistrict": "Шевченківський",
+    "MetroName": "Золоті ворота",
+    "MetroLine": "Сирецько-Печерська",
+    "MetroDistance": "443.207",
+    "HouseString": "8",
+    "Description": null
+  },
+  {
+    "HouseId": 326382,
+    "HouseNum": "8",
+    "HouseNumAdd": "Б",
+    "Index_": "01054",
+    "Lat": "50.449707",
+    "Long": "30.512403",
+    "CityDistrict": "Шевченківський",
+    "MetroName": "Золоті ворота",
+    "MetroLine": "Сирецько-Печерська",
+    "MetroDistance": "457.577",
+    "HouseString": "8Б",
+    "Description": null
+  }
+]

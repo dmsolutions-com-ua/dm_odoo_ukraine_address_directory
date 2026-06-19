@@ -1,0 +1,2 @@
+curl --location 'https://api.dmsolutions.com.ua:2661/api/Houses?sRequest=8&houseMoniker=46bf4f29-4986-4ce4-9839-eb501b6d0a7c&sLang=uk_UA' \
+--header 'Authorization: Bearer {{token}}'
