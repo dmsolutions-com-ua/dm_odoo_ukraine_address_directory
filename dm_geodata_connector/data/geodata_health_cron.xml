@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo noupdate="1">
+
+    <!--
+        Час першого запуску (nextcall) тут навмисно не задано: його виставляє
+        post_init_hook на 01:MM за Києвом (MM = мажорна версія Odoo, конвертовано в
+        UTC), бо XML не вміє рахувати часову зону/версію. Інтервал — 1 день.
+    -->
+    <record id="cron_geodata_health_check" model="ir.cron">
+        <field name="name">Geodata: health check</field>
+        <field name="model_id" ref="model_dm_geodata_api_credential"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_health_check()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+    </record>
+
+</odoo>

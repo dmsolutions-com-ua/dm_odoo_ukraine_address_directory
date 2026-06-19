@@ -1,0 +1,2 @@
+curl --location 'https://api.dmsolutions.com.ua:2661/api/Cities?sRequest=%D0%A2%D0%B0%D1%80%D0%B0%D1%81&sRegion=%D0%9C%D0%B8%D0%BA%D0%BE%D0%BB' \
+--header 'Authorization: Bearer {{token}}'

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo noupdate="0">
+
+    <record id="group_geodata_user" model="res.groups">
+        <field name="name">Geodata.online User</field>
+        <field name="comment">Can administer the address reference directory.</field>
+    </record>
+
+    <record id="group_geodata_manager" model="res.groups">
+        <field name="name">Geodata.online Manager</field>
+        <field name="implied_ids" eval="[(4, ref('group_geodata_user'))]"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        <field name="comment">Can configure Geodata API credentials.</field>
+    </record>
+
+</odoo>

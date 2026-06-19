@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="geodata_request_log_view_list" model="ir.ui.view">
+        <field name="name">dm.geodata.request.log.list</field>
+        <field name="model">dm.geodata.request.log</field>
+        <field name="arch" type="xml">
+            <list string="Geodata API Request Log" create="false" edit="false">
+                <field name="create_date"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="name"/>
+                <field name="method"/>
+                <field name="code"
+                       decoration-danger="code >= 400 or code == 0"
+                       decoration-success="code &gt;= 200 and code &lt; 300"/>
+                <field name="duration_ms"/>
+                <field name="error" optional="hide"/>
+                <field name="delete_by_date" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="geodata_request_log_view_form" model="ir.ui.view">
+        <field name="name">dm.geodata.request.log.form</field>
+        <field name="model">dm.geodata.request.log</field>
+        <field name="arch" type="xml">
+            <form string="Geodata API Request Log" create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group string="Request">
+                            <field name="create_date"/>
+                            <field name="method"/>
+                            <field name="name"/>
+                            <field name="params"/>
+                            <field name="headers"/>
+                        </group>
+                        <group string="Response">
+                            <field name="code"/>
+                            <field name="duration_ms"/>
+                            <field name="delete_by_date"/>
+                            <field name="error"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="geodata_request_log_view_search" model="ir.ui.view">
+        <field name="name">dm.geodata.request.log.search</field>
+        <field name="model">dm.geodata.request.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Request Log">
+                <field name="name"/>
+                <field name="method"/>
+                <field name="code"/>
+                <filter string="Errors" name="errors"
+                        domain="['|', ('error', '!=', False), ('code', '&gt;=', 400)]"/>
+                <group name="group_by">
+                    <filter string="Company" name="group_company" context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                    <filter string="Method" name="group_method" context="{'group_by': 'method'}"/>
+                    <filter string="HTTP Status" name="group_code" context="{'group_by': 'code'}"/>
+                    <filter string="Created on" name="group_create" context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="geodata_request_log_action" model="ir.actions.act_window">
+        <field name="name">Request Log</field>
+        <field name="res_model">dm.geodata.request.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_errors': 0}</field>
+    </record>
+
+    <menuitem id="menu_geodata_request_log" name="Request Log"
+              parent="menu_geodata_root" action="geodata_request_log_action"
+              sequence="30" groups="group_geodata_manager"/>
+
+</odoo>

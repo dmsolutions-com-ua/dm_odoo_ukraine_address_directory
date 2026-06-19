@@ -1,0 +1,92 @@
+[
+  {
+    "house_moniker": "3f550df8-1459-4d3b-bbcc-8c74bbcbfa14",
+    "StreetId": 31801,
+    "Street": "Ярославська",
+    "StreetType": "вул.",
+    "StreetTypeOld": null,
+    "StreetOld": null,
+    "StreetString": "вул. Ярославська",
+    "Description": null
+  },
+  {
+    "house_moniker": "daed2ff7-3d10-4004-8ae1-38ed0010fdc4",
+    "StreetId": 135828,
+    "Street": "Ярославів Вал",
+    "StreetType": "вул.",
+    "StreetTypeOld": null,
+    "StreetOld": null,
+    "StreetString": "вул. Ярославів Вал",
+    "Description": null
+  },
+  {
+    "house_moniker": "289a0e82-bcc3-4bea-a97d-d370498167d6",
+    "StreetId": 227821,
+    "Street": "Гашека Ярослава",
+    "StreetType": "бул.",
+    "StreetTypeOld": null,
+    "StreetOld": null,
+    "StreetString": "бул. Гашека Ярослава",
+    "Description": null
+  },
+  {
+    "house_moniker": "56555ea1-ae36-4d48-98d6-852e406b07eb",
+    "StreetId": 57510,
+    "Street": "Івашкевича Ярослава",
+    "StreetType": "вул.",
+    "StreetTypeOld": null,
+    "StreetOld": null,
+    "StreetString": "вул. Івашкевича Ярослава",
+    "Description": null
+  },
+  {
+    "house_moniker": "1045abcc-e21a-4209-b315-90ae9ae86425",
+    "StreetId": 156960,
+    "Street": "Волошина Августина",
+    "StreetType": "вул.",
+    "StreetTypeOld": null,
+    "StreetOld": "Галана Ярослава",
+    "StreetString": "вул. Волошина Августина (вул. Галана Ярослава)",
+    "Description": null
+  },
+  {
+    "house_moniker": "91a487a9-72ec-4c5e-8268-de54b1e75061",
+    "StreetId": 215326,
+    "Street": "Князя Всеволода Ярославича",
+    "StreetType": "вул.",
+    "StreetTypeOld": null,
+    "StreetOld": "Пухова Генерала",
+    "StreetString": "вул. Князя Всеволода Ярославича (вул. Пухова Генерала)",
+    "Description": null
+  },
+  {
+    "house_moniker": "f959a6e5-1594-48a2-aea5-1800eae42443",
+    "StreetId": 15612,
+    "Street": "Анни Ярославни",
+    "StreetType": "вул.",
+    "StreetTypeOld": null,
+    "StreetOld": "Фадєєва",
+    "StreetString": "вул. Анни Ярославни (вул. Фадєєва)",
+    "Description": null
+  },
+  {
+    "house_moniker": "9caca99f-1284-4453-86fa-01b9465a83e2",
+    "StreetId": 265453,
+    "Street": "Хомова Ярослава",
+    "StreetType": "пров.",
+    "StreetTypeOld": null,
+    "StreetOld": "Островського Миколи",
+    "StreetString": "пров. Хомова Ярослава (пров. Островського Миколи)",
+    "Description": null
+  },
+  {
+    "house_moniker": "72c54dfb-7078-4cf8-915f-153509a23261",
+    "StreetId": 208176,
+    "Street": "Ярославський",
+    "StreetType": "пров.",
+    "StreetTypeOld": null,
+    "StreetOld": null,
+    "StreetString": "пров. Ярославський",
+    "Description": null
+  }
+]

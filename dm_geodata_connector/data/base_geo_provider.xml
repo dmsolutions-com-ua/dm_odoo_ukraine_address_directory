@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!-- Реєструє Geodata.online як провайдера base_geolocalize, щоб base.geocoder
+         диспетчеризував на _call_geodata / _geo_query_address_geodata.
+         Не примусово за замовчуванням (уникаємо гонки глобального параметра geo_provider). -->
+    <record id="geoprovider_geodata" model="base.geo_provider">
+        <field name="tech_name">geodata</field>
+        <field name="name">Geodata.online</field>
+    </record>
+</odoo>

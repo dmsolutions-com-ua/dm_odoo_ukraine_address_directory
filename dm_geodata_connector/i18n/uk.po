@@ -1,0 +1,1059 @@
+# Translation of Ukraine Address Reference Directory (dm_geodata_connector).
+# This file contains the Ukrainian translations.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Language-Team: Ukrainian\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_address.py:0
+msgid "Yes"
+msgstr "Так"
+
+#. module: dm_geodata_connector
+#: model:ir.actions.act_window,name:dm_geodata_connector.geodata_api_credential_action
+#: model:ir.ui.menu,name:dm_geodata_connector.menu_geodata_api_credential
+msgid "API Credentials"
+msgstr "Облікові дані API"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__details_format_col1
+msgid "Address details: column 1"
+msgstr "Деталі адреси: колонка 1"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__details_format_col2
+msgid "Address details: column 2"
+msgstr "Деталі адреси: колонка 2"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Address details columns (contact tab)"
+msgstr "Колонки деталей адреси (вкладка контакту)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__api_url
+msgid "API URL"
+msgstr "URL API"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid "API returned empty user info. Check credentials."
+msgstr "API повернув порожні дані акаунта. Перевірте облікові дані."
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Additional"
+msgstr "Додатково"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Address"
+msgstr "Адреса"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__address_format_display
+msgid "Contact address line template"
+msgstr "Шаблон адреси (рядок на картці)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__address_format_document
+msgid "Document address template"
+msgstr "Шаблон адреси для документів"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__address_format_letter
+msgid "Envelope address template"
+msgstr "Шаблон адреси для конвертів"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Address Templates"
+msgstr "Шаблони адрес"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__block_format_city
+msgid "City field template"
+msgstr "Шаблон поля «Місто»"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__block_format_street
+msgid "Street field template"
+msgstr "Шаблон поля «Вулиця»"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__block_format_area
+msgid "District field template"
+msgstr "Шаблон поля «Район»"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__block_format_hromada
+msgid "Hromada field template"
+msgstr "Шаблон поля «Громада»"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__block_format_street2
+msgid "Street 2 field template"
+msgstr "Шаблон поля «Вулиця 2»"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Document / envelope address"
+msgstr "Адреса документів / конвертів"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Address block fields (filled from API)"
+msgstr "Поля адресного блоку (заповнення з API)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address_mixin__geodata_address_updated
+msgid "Address Updated"
+msgstr "Адресу оновлено"
+
+#. module: dm_geodata_connector
+#: model:ir.ui.menu,name:dm_geodata_connector.menu_geodata_address
+msgid "Addresses"
+msgstr "Адреси"
+
+#. module: dm_geodata_connector
+#: model:ir.actions.act_window,name:dm_geodata_connector.geodata_address_action
+msgid "Addresses (Geodata)"
+msgstr "Адреси (Geodata)"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Administrative"
+msgstr "Адміністративний поділ"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__payment_notification_interval
+msgid "Alert Interval (minutes)"
+msgstr "Інтервал сповіщень (хв)"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Authentication"
+msgstr "Автентифікація"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Autocomplete"
+msgstr "Автозаповнення"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__debounce_ms
+msgid "Autocomplete debounce (ms)"
+msgstr "Затримка автозаповнення (мс)"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Building"
+msgstr "Будинок"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Check Now"
+msgstr "Перевірити зараз"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Codes and Status"
+msgstr "Коди та статус"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__comments
+msgid "Comments"
+msgstr "Коментарі"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__company_id
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__company_id
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_request_log_view_form
+msgid "Company"
+msgstr "Компанія"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid "Connection successful. Email: %(email)s, Balance: %(balance)s"
+msgstr "З'єднання успішне. Email: %(email)s, Баланс: %(balance)s"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Coordinates"
+msgstr "Координати"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_request_log_view_form
+msgid "Created on"
+msgstr "Створено"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_request_log__delete_by_date
+msgid "Delete After"
+msgstr "Видалити після"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__description
+msgid "Description"
+msgstr "Опис"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,help:dm_geodata_connector.field_dm_geodata_api_credential__show_area
+msgid ""
+"Display the District (Raion) field on address forms. Off only hides the "
+"field - the value is still filled and used in document addresses."
+msgstr ""
+"Показувати поле «Район» на адресних формах. Вимкнено лише ховає поле — "
+"значення все одно заповнюється й використовується в документних адресах."
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,help:dm_geodata_connector.field_dm_geodata_api_credential__show_hromada
+msgid ""
+"Display the Hromada (Territorial Community) field on address forms. Off only"
+" hides the field - the value is still filled and used."
+msgstr ""
+"Показувати поле «Громада» на адресних формах. Вимкнено лише ховає поле — "
+"значення все одно заповнюється й використовується."
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__is_district_center
+msgid "District Center"
+msgstr "Районний центр"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__area
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address_mixin__area
+msgid "District/Raion"
+msgstr "Район"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__area_en
+msgid "District/Raion (EN)"
+msgstr "Район (EN)"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Documents"
+msgstr "Документи"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_request_log__duration_ms
+msgid "Duration (ms)"
+msgstr "Тривалість (мс)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__health_check_enabled
+msgid "Enable health monitoring"
+msgstr "Увімкнути моніторинг стану"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "English Transliteration"
+msgstr "Англійська транслітерація"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_request_log__error
+#: model:ir.model.fields.selection,name:dm_geodata_connector.selection__dm_geodata_api_credential__health_status__error
+msgid "Error"
+msgstr "Помилка"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_request_log_view_form
+msgid "Errors"
+msgstr "Помилки"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid "Failed to obtain access token. Check username/password."
+msgstr "Не вдалося отримати токен доступу. Перевірте логін/пароль."
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_address_mixin.py:0
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__address_string
+msgid "Full Address"
+msgstr "Повна адреса"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__address_full_en
+msgid "Full Address (EN)"
+msgstr "Повна адреса (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__address_full_ua
+msgid "Full Address (UA)"
+msgstr "Повна адреса (UA)"
+
+#. module: dm_geodata_connector
+#: model:ir.model,name:dm_geodata_connector.model_dm_geodata_api_credential
+msgid "Geodata API Credential"
+msgstr "Облікові дані Geodata API"
+
+#. module: dm_geodata_connector
+#: model:ir.model,name:dm_geodata_connector.model_dm_geodata_request_log
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_request_log_view_form
+msgid "Geodata API Request Log"
+msgstr "Журнал запитів Geodata API"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid "Geodata API connection error: %s"
+msgstr "Помилка з'єднання з Geodata API: %s"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid "Geodata API error [%(code)s]: %(msg)s"
+msgstr "Помилка Geodata API [%(code)s]: %(msg)s"
+
+#. module: dm_geodata_connector
+#: model:ir.model,name:dm_geodata_connector.model_dm_geodata_address
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address_mixin__geodata_address_id
+msgid "Geodata Address"
+msgstr "Адреса Geodata"
+
+#. module: dm_geodata_connector
+#: model:ir.model,name:dm_geodata_connector.model_dm_geodata_address_mixin
+msgid "Geodata Address Mixin"
+msgstr "Міксин адреси Geodata"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Geodata Addresses"
+msgstr "Адреси Geodata"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__geodata_id
+msgid "Geodata ID"
+msgstr "ID Geodata"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid "Geodata.online"
+msgstr "Geodata.online"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Geodata.online API Credential"
+msgstr "Облікові дані Geodata.online API"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Geodata.online Address"
+msgstr "Адреса Geodata.online"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Geodata.online Credentials"
+msgstr "Облікові дані Geodata.online"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid "Geodata.online health check"
+msgstr "Перевірка стану Geodata.online"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid ""
+"Geodata.online server unreachable or invalid credentials (no account info "
+"returned)."
+msgstr ""
+"Сервер Geodata.online недоступний або невірні облікові дані (дані акаунта не"
+" повернуто)."
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid ""
+"Geodata.online: no active API credential is configured for company "
+"'%(company)s' - address autocomplete will not work there. Configure one "
+"under Settings -> Geodata.online -> API Credentials."
+msgstr ""
+"Geodata.online: для компанії «%(company)s» не налаштовано активних облікових"
+" даних API — автозаповнення адрес там не працюватиме. Налаштуйте їх у "
+"Налаштування → Geodata.online → Облікові дані API."
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_request_log__code
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_request_log_view_form
+msgid "HTTP Status"
+msgstr "HTTP-статус"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_request_log__headers
+msgid "Headers"
+msgstr "Заголовки"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__health_message
+msgid "Health Detail"
+msgstr "Деталі стану"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__health_status
+msgid "Health Status"
+msgstr "Стан"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__show_manual_hint
+msgid "Highlight manual address data"
+msgstr "Підсвічувати введені вручну адресні дані"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__house_ref
+msgid "House ID"
+msgstr "ID будинку"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__house_num
+msgid "House Number"
+msgstr "Номер будинку"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__house_num_add
+msgid "House Number Addition"
+msgstr "Літера/доповнення номера"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__house_num_add_en
+msgid "House Number Addition (EN)"
+msgstr "Літера/доповнення номера (EN)"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid ""
+"Insufficient funds on your Geodata.online account. Please top up your "
+"balance at https://geodata.online/"
+msgstr ""
+"Недостатньо коштів на рахунку Geodata.online. Поповніть баланс на "
+"https://geodata.online/"
+
+#. module: dm_geodata_connector
+#: model:ir.module.module,summary:base.module_dm_geodata_connector
+msgid ""
+"Integration with Geodata.online API for address autocomplete and "
+"normalization in Ukraine (self-contained, Odoo 19)."
+msgstr ""
+"Інтеграція з API Geodata.online для автозаповнення та нормалізації адрес в "
+"Україні (самодостатній модуль, Odoo 19)."
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid ""
+"Invalid placeholders in %(field)s: %(found)s.\n"
+"Valid placeholders: %(valid)s"
+msgstr ""
+"Неприпустимі плейсхолдери у %(field)s: %(found)s.\n"
+"Допустимі плейсхолдери: %(valid)s"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__kato
+msgid "KATOTTG"
+msgstr "КАТОТТГ"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__koatuu
+msgid "KOATUU"
+msgstr "КОАТУУ"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__health_alert_last
+msgid "Last Health Alert"
+msgstr "Останнє сповіщення про стан"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__health_last_check
+msgid "Last Health Check"
+msgstr "Остання перевірка стану"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__last_balance
+msgid "Last Known Balance"
+msgstr "Останній відомий баланс"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__payment_notification_last
+msgid "Last Payment Alert"
+msgstr "Останнє сповіщення про оплату"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__latitude
+msgid "Latitude"
+msgstr "Широта"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,help:dm_geodata_connector.field_dm_geodata_api_credential__company_id
+msgid "Leave empty to make this credential available to all companies."
+msgstr "Залиште порожнім, щоб ці облікові дані були доступні всім компаніям."
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,help:dm_geodata_connector.field_dm_geodata_address__company_id
+msgid "Leave empty to share this address across all companies."
+msgstr "Залиште порожнім, щоб ця адреса була спільною для всіх компаній."
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__address_letter_en
+msgid "Letter Address (EN)"
+msgstr "Адреса для листа (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__address_letter_ua
+msgid "Letter Address (UA)"
+msgstr "Адреса для листа (UA)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__is_log_enabled
+msgid "Log API requests"
+msgstr "Журналювати запити до API"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__log_retention_days
+msgid "Log retention (days)"
+msgstr "Зберігати журнал (днів)"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Logging"
+msgstr "Журналювання"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__longitude
+msgid "Longitude"
+msgstr "Довгота"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid ""
+"Low Geodata.online balance: %(balance).2f (threshold %(threshold).2f). Top "
+"up at https://geodata.online/"
+msgstr ""
+"Низький баланс Geodata.online: %(balance).2f (поріг %(threshold).2f). "
+"Поповніть на https://geodata.online/"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__balance_alert_threshold
+msgid "Low balance threshold"
+msgstr "Поріг низького балансу"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Main Information"
+msgstr "Основна інформація"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,help:dm_geodata_connector.field_dm_geodata_api_credential__show_manual_hint
+msgid ""
+"Mark non-empty address fields that were entered manually (not chosen from "
+"the directory) with a red border and an info icon."
+msgstr ""
+"Позначати непорожні адресні поля, введені вручну (не вибрані з довідника), "
+"червоною рамкою та інформаційною іконкою."
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_request_log__method
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_request_log_view_form
+msgid "Method"
+msgstr "Метод"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Metro"
+msgstr "Метро"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__metro_distance
+msgid "Metro Distance"
+msgstr "Відстань до метро"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__metro_line
+msgid "Metro Line"
+msgstr "Лінія метро"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__metro_station
+msgid "Metro Station"
+msgstr "Станція метро"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__min_chars
+msgid "Min characters"
+msgstr "Мінімум символів"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,help:dm_geodata_connector.field_dm_geodata_api_credential__payment_notification_interval
+msgid ""
+"Minimum gap between repeated admin alerts (low balance / payment required / "
+"server unreachable), to avoid spamming."
+msgstr ""
+"Мінімальний проміжок між повторними сповіщеннями адміну (низький баланс / "
+"потрібна оплата / сервер недоступний), щоб уникнути спаму."
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Monitoring"
+msgstr "Моніторинг"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_address.py:0
+msgid "New Address"
+msgstr "Нова адреса"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields.selection,name:dm_geodata_connector.selection__dm_geodata_api_credential__health_status__unknown
+msgid "Not checked"
+msgstr "Не перевірено"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid "OK. Balance: %.2f"
+msgstr "OK. Баланс: %.2f"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__area_old
+msgid "Old District"
+msgstr "Старий район"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__hromada_old
+msgid "Old Hromada"
+msgstr "Стара громада"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Old Names"
+msgstr "Старі назви"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__region_old
+msgid "Old Region"
+msgstr "Стара область"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__city_old
+msgid "Old Settlement Name"
+msgstr "Стара назва населеного пункту"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__settlement_type_old
+msgid "Old Settlement Type"
+msgstr "Старий тип населеного пункту"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__street_old
+msgid "Old Street Name"
+msgstr "Стара назва вулиці"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__str_type_old
+msgid "Old Street Type"
+msgstr "Старий тип вулиці"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__suburb_old
+msgid "Old Suburb"
+msgstr "Старе передмістя"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_request_log__params
+msgid "Parameters"
+msgstr "Параметри"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__api_password
+msgid "Password"
+msgstr "Пароль"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,help:dm_geodata_connector.field_dm_geodata_api_credential__health_check_enabled
+msgid ""
+"Periodically verify server reachability, authentication and account balance,"
+" and alert managers on problems."
+msgstr ""
+"Періодично перевіряти доступність сервера, автентифікацію та баланс рахунку "
+"й сповіщати менеджерів про проблеми."
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__phone_code
+msgid "Phone Code"
+msgstr "Телефонний код"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__post_index
+msgid "Postal Code"
+msgstr "Поштовий індекс"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,help:dm_geodata_connector.field_dm_geodata_api_credential__balance_alert_threshold
+msgid ""
+"Raise a warning when the account balance is at or below this value (0 = "
+"alert only once the balance is exhausted)."
+msgstr ""
+"Видавати попередження, коли баланс рахунку дорівнює цьому значенню або "
+"нижчий (0 = сповіщати лише коли баланс вичерпано)."
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__api_payload
+msgid "Raw API payload"
+msgstr "Сире тіло відповіді API"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Region"
+msgstr "Область"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__region_en
+msgid "Region (EN)"
+msgstr "Область (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__region
+msgid "Region/Oblast"
+msgstr "Область"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__is_regional_center
+msgid "Regional Center"
+msgstr "Обласний центр"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_request_log_view_form
+msgid "Request"
+msgstr "Запит"
+
+#. module: dm_geodata_connector
+#: model:ir.actions.act_window,name:dm_geodata_connector.geodata_request_log_action
+#: model:ir.ui.menu,name:dm_geodata_connector.menu_geodata_request_log
+msgid "Request Log"
+msgstr "Журнал запитів"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,help:dm_geodata_connector.field_dm_geodata_request_log__headers
+msgid "Request headers (sensitive values masked)"
+msgstr "Заголовки запиту (чутливі значення замасковано)"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_request_log_view_form
+msgid "Response"
+msgstr "Відповідь"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address_mixin__geodata_search
+msgid "Search Address"
+msgstr "Пошук адреси"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Search Addresses"
+msgstr "Пошук адрес"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_request_log_view_form
+msgid "Search Request Log"
+msgstr "Пошук у журналі запитів"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__city
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Settlement"
+msgstr "Населений пункт"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__city_en
+msgid "Settlement (EN)"
+msgstr "Населений пункт (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__city_district
+msgid "Settlement District"
+msgstr "Район у населеному пункті"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__city_district_en
+msgid "Settlement District (EN)"
+msgstr "Район у населеному пункті (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__settlement_ref
+msgid "Settlement ID"
+msgstr "ID населеного пункту"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__latitude_settlement
+msgid "Settlement Latitude"
+msgstr "Широта (н.п.)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__longitude_settlement
+msgid "Settlement Longitude"
+msgstr "Довгота (н.п.)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__settlement_type
+msgid "Settlement Type"
+msgstr "Тип населеного пункту"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__settlement_type_en
+msgid "Settlement Type (EN)"
+msgstr "Тип населеного пункту (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__show_area
+msgid "Show District/Raion field"
+msgstr "Показувати поле «Район»"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__show_hromada
+msgid "Show Hromada field"
+msgstr "Показувати поле «Громада»"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__show_old_names
+msgid "Store historical (old) names"
+msgstr "Зберігати історичні (старі) назви"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__source_query
+msgid "Source Address"
+msgstr "Початкова адреса"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Status"
+msgstr "Стан"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__store_english
+msgid "Store English Transliteration"
+msgstr "Зберігати англійську транслітерацію"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__street_ref
+msgid "Street ID"
+msgstr "ID вулиці"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__street
+msgid "Street Name"
+msgstr "Назва вулиці"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__street_en
+msgid "Street Name (EN)"
+msgstr "Назва вулиці (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__str_type
+msgid "Street Type"
+msgstr "Тип вулиці"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__str_type_en
+msgid "Street Type (EN)"
+msgstr "Тип вулиці (EN)"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid "Success"
+msgstr "Успіх"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Sync Ukraine States"
+msgstr "Синхронізувати області України"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Synchronize Ukraine states with reference data?"
+msgstr "Синхронізувати області України з довідковими даними?"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__hromada
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address_mixin__hromada
+msgid "Territorial Community"
+msgstr "Громада"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__hromada_en
+msgid "Territorial Community (EN)"
+msgstr "Громада (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__terr_status
+msgid "Territory Status"
+msgstr "Статус території"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Test Connection"
+msgstr "Перевірити з'єднання"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_request_log__name
+msgid "URL"
+msgstr "URL"
+
+#. module: dm_geodata_connector
+#: model:ir.module.module,shortdesc:base.module_dm_geodata_connector
+msgid "Ukraine Address Reference Directory"
+msgstr "Адресний довідник України"
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
+msgid "Ukraine states synced: created=%(c)s updated=%(u)s skipped=%(s)s"
+msgstr ""
+"Області України синхронізовано: створено=%(c)s оновлено=%(u)s "
+"пропущено=%(s)s"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__api_username
+msgid "Username"
+msgstr "Логін"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address_mixin__geodata_verified_level
+msgid "Verified up to"
+msgstr "Підтверджено до рівня"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields.selection,name:dm_geodata_connector.selection__dm_geodata_api_credential__health_status__warning
+msgid "Warning"
+msgstr "Попередження"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,help:dm_geodata_connector.field_dm_geodata_api_credential__show_old_names
+msgid ""
+"When set, the pre-2020 (historical) name of a settlement / street / district"
+" / hromada is stored in parentheses next to the current one (e.g. 'вул. "
+"Стуса Василя (вул. Механізаторська)') in the contact's address block fields "
+"(City / Street / District / Hromada). The document and letter addresses "
+"always include historical names regardless of this toggle."
+msgstr ""
+"Коли увімкнено, історична (до 2020 р.) назва населеного пункту / вулиці / "
+"району / громади зберігається в дужках поряд із чинною (напр. 'вул. Стуса "
+"Василя (вул. Механізаторська)') у полях адресного блоку контакту (Місто / "
+"Вулиця / Район / Громада). Документні та листові адреси завжди містять "
+"історичні назви, незалежно від цього перемикача."
+
+#. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/models/geodata_address.py:0
+msgid "apt."
+msgstr "кв."
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid "Register at"
+msgstr "Зареєструйтесь на"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid ""
+"and enter your account email and password. The access\n"
+"                                token is stored securely and refreshed automatically."
+msgstr ""
+"та введіть email і пароль вашого акаунта. Токен доступу зберігається "
+"безпечно й оновлюється автоматично."
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid ""
+"Placeholders: {country} {index} {region} {area} {hromada}\n"
+"                                {city} {street} {house} {apartment} {region_old} {area_old}\n"
+"                                {hromada_old} {city_old} {street_old}. Each placeholder may\n"
+"                                be used only once; empty values are skipped.\n"
+"                                <br/>\n"
+"                                Non-empty segments are joined with commas. A base\n"
+"                                placeholder immediately followed by its <strong>{*_old}</strong>\n"
+"                                counterpart (e.g. {street} {street_old}) is merged into a\n"
+"                                single \"current (old)\" segment, e.g.\n"
+"                                \"вул. Центральна (Леніна)\" — for city/street this also\n"
+"                                carries the old type (\"село (смт) Іванівське\"). A standalone\n"
+"                                {*_old} renders the bare old name.\n"
+"                                <br/>\n"
+"                                The document and letter addresses always show historical\n"
+"                                names; the <strong>Store historical (old) names</strong>\n"
+"                                toggle affects only the contact's address block fields."
+msgstr ""
+"Плейсхолдери: {country} {index} {region} {area} {hromada} {city} {street} "
+"{house} {apartment} {region_old} {area_old} {hromada_old} {city_old} "
+"{street_old}. Кожен плейсхолдер можна використати лише раз; порожні значення"
+" пропускаються. <br/> Непорожні сегменти з'єднуються комами. Базовий "
+"плейсхолдер, за яким одразу йде його відповідник <strong>{*_old}</strong> "
+"(напр. {street} {street_old}), об'єднується в один сегмент «поточне "
+"(старе)», напр. «вул. Центральна (Леніна)» — для міста/вулиці він також несе"
+" старий тип («село (смт) Іванівське»). Окремий {*_old} виводить голу стару "
+"назву. <br/> Документні та листові адреси завжди показують історичні назви; "
+"перемикач <strong>Store historical (old) names</strong> впливає лише на поля"
+" адресного блоку контакту."
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_api_credential_view_form
+msgid ""
+"The daily <strong>Geodata: health check</strong>\n"
+"                                scheduled action verifies server reachability,\n"
+"                                authentication and account balance. Problems are\n"
+"                                written to the server log and pushed to\n"
+"                                Geodata.online managers as a live notification.\n"
+"                                Use <strong>Check Now</strong> to run it on demand."
+msgstr ""
+"Щоденна запланована дія <strong>Geodata: health check</strong> перевіряє "
+"доступність сервера, авторизацію та баланс акаунта. Проблеми записуються в "
+"журнал сервера й надсилаються менеджерам Geodata.online як живе сповіщення. "
+"Натисніть <strong>Check Now</strong>, щоб запустити перевірку вручну."
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__write_date
+msgid "Last Updated on"
+msgstr "Останнє оновлення"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Current"
+msgstr "Поточні"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Old names"
+msgstr "Старі назви"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__region_old_en
+msgid "Old Region (EN)"
+msgstr "Стара область (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__area_old_en
+msgid "Old District (EN)"
+msgstr "Старий район (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__hromada_old_en
+msgid "Old Hromada (EN)"
+msgstr "Стара громада (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__settlement_type_old_en
+msgid "Old Settlement Type (EN)"
+msgstr "Старий тип населеного пункту (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__city_old_en
+msgid "Old Settlement Name (EN)"
+msgstr "Стара назва населеного пункту (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__str_type_old_en
+msgid "Old Street Type (EN)"
+msgstr "Старий тип вулиці (EN)"
+
+#. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__street_old_en
+msgid "Old Street Name (EN)"
+msgstr "Стара назва вулиці (EN)"

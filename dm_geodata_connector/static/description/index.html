@@ -1,0 +1,154 @@
+<section class="oe_container">
+  <div class="oe_row oe_spaced">
+    <div class="oe_span12" style="text-align:center;">
+      <h1 class="oe_slogan" style="color:#1a73e8;">Адресний довідник України — Geodata.online</h1>
+      <h3 class="oe_slogan" style="color:#666;">
+        Автозаповнення, нормалізація, геокодування та зберігання українських адрес
+        для Odoo 19 (Community). Самодостатній модуль — без зовнішніх залежностей.
+      </h3>
+      <p style="text-align:center;">
+        <img src="images/image1.png" style="max-width:90%;" alt="Адресний довідник України"/>
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container oe_dark">
+  <div class="oe_row oe_spaced">
+    <div class="oe_span12" style="text-align:center;">
+      <h2 class="oe_slogan">Що це</h2>
+      <p class="oe_mt32">
+        Ядро інтеграції з API <strong>Geodata.online</strong>: вводьте місто →
+        вулицю → будинок із підказок, а модуль сам нормалізує адресу, підтягує
+        офіційні коди (КАТОТТГ/КОАТУУ), координати та формує готові адреси для
+        документів і листів українською й англійською (транслітерація).
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container">
+  <div class="oe_row oe_spaced">
+    <div class="oe_span6">
+      <h3 class="oe_slogan" style="text-align:left;">Автозаповнення адрес</h3>
+      <p>
+        Власний OWL-віджет: підказки міста, вулиці й будинку прямо в адресному
+        блоці (без майстра), із debounce, мінімальною довжиною запиту та
+        дедуплікацією — зайвих (платних) запитів до API не робиться. Пошук працює
+        лише для України.
+      </p>
+    </div>
+    <div class="oe_span6">
+      <img src="images/image2.png" style="max-width:100%;" alt="Автозаповнення адреси"/>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container oe_dark">
+  <div class="oe_row oe_spaced">
+    <div class="oe_span6">
+      <img src="images/image3.png" style="max-width:100%;" alt="Документні адреси"/>
+    </div>
+    <div class="oe_span6">
+      <h3 class="oe_slogan" style="text-align:left;">Документи та листи</h3>
+      <p>
+        Готові повні адреси для договорів і листів — українською та англійською
+        (транслітерація). Налаштовувані шаблони формату; район і громада
+        заповнюються автоматично з вибору адреси.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container">
+  <div class="oe_row oe_spaced">
+    <div class="oe_span12" style="text-align:center;">
+      <h2 class="oe_slogan">Можливості</h2>
+    </div>
+  </div>
+  <div class="oe_row oe_spaced">
+    <div class="oe_span6">
+      <h4>Нормалізація та коди</h4>
+      <p>Зберігання канонічної адреси з кодами КАТОТТГ/КОАТУУ, статусом території,
+        координатами та повним набором полів (UA + EN).</p>
+      <h4>Історичні (старі) назви</h4>
+      <p>За потреби — стара назва міста/вулиці/району/громади в дужках поряд із
+        чинною; пошук і звірка прозоро ігнорують «(стару назву)».</p>
+      <p>Для населеного пункту стара назва показується лише коли це
+        <strong>справжнє перейменування</strong>, а не старе адміністративне
+        підпорядкування — інакше вона не виводиться ні в полі City, ні в адресах
+        для документів і конвертів.</p>
+      <h4>Формати для документів і конвертів</h4>
+      <p>Налаштовувані шаблони з готовим типовим набором: сегменти —
+        <strong>через кому</strong>; поточна й стара назва, що йдуть поряд
+        (напр. <code>{area} {area_old}</code>), об'єднуються в один сегмент
+        «поточне (стара)». Старі назви тут — завжди, а перемикач історичних назв
+        керує лише адресним блоком контакту. EN-версія повністю транслітерована,
+        включно зі старими назвами й типами.</p>
+      <h4>Геокодер</h4>
+      <p>Провайдер геокодування для <code>base_geolocalize</code> — без побічного
+        створення записів.</p>
+    </div>
+    <div class="oe_span6">
+      <h4>Health-моніторинг</h4>
+      <p>Щоденна перевірка (плюс кнопка «Перевірити зараз»): доступність сервера,
+        авторизація, баланс рахунку та наявність облікових даних. Проблеми
+        потрапляють у журнал і спливають менеджерам.</p>
+      <h4>Мультикомпанія</h4>
+      <p>Облікові дані — глобальні або окремі на компанію; адреси, журнал запитів і
+        сповіщення ізольовані за компаніями.</p>
+      <h4>Безпека</h4>
+      <p>Логін/пароль і токен — лише для адміністратора; токен у параметрах
+        (sudo), у журналі запитів заголовок <code>Authorization</code> замаскований.
+        Автозаповнення доступне будь-якому внутрішньому користувачу через
+        sudo-сервіс.</p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container oe_dark">
+  <div class="oe_row oe_spaced">
+    <div class="oe_span12" style="text-align:center;">
+      <h2 class="oe_slogan">Інтеграції (бриджі)</h2>
+      <p>Уся логіка — в одному міксині, тож підтримка нових моделей тонка:</p>
+      <p style="text-align:left; display:inline-block;">
+        • <strong>Контакти</strong> (<code>res.partner</code>)<br/>
+        • <strong>CRM</strong> — ліди/нагоди (<code>crm.lead</code>)<br/>
+        • <strong>Компанії</strong> (<code>res.company</code>)<br/>
+        • <strong>Кадри</strong> — приватна адреса працівника (<code>hr.employee</code>)<br/>
+        • <strong>Банки</strong> (<code>res.bank</code>)
+      </p>
+      <p class="oe_mt32">
+        <img src="images/image4.png" style="max-width:90%;" alt="Інтеграції"/>
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container">
+  <div class="oe_row oe_spaced">
+    <div class="oe_span6">
+      <h3 class="oe_slogan" style="text-align:left;">Налаштування</h3>
+      <p>
+        Налаштування → Geodata.online → <strong>Облікові дані API</strong> →
+        введіть логін/пароль акаунта geodata.online → <strong>Перевірити
+        з'єднання</strong> (звіряє доступ і синхронізує області України).
+      </p>
+    </div>
+    <div class="oe_span6">
+      <img src="images/image5.png" style="max-width:100%;" alt="Налаштування облікових даних"/>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container oe_dark">
+  <div class="oe_row oe_spaced">
+    <div class="oe_span12" style="text-align:center;">
+      <h3 class="oe_slogan">Вимоги</h3>
+      <p>Odoo 19.0 Community · Python 3.10+ · PostgreSQL · Python-пакет
+        <code>requests</code> · дійсний акаунт на
+        <a href="https://geodata.online" target="_blank">geodata.online</a>.</p>
+      <p style="color:#888;">© DM Solutions · <a href="https://geodata.online" target="_blank">geodata.online</a></p>
+    </div>
+  </div>
+</section>

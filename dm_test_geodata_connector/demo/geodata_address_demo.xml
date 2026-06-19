@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo noupdate="1">
+    <record id="geodata_address_demo_kyiv" model="dm.geodata.address">
+        <field name="geodata_id">9000001</field>
+        <field name="region">Київ</field>
+        <field name="city">Київ</field>
+        <field name="settlement_type">місто</field>
+        <field name="str_type">вул.</field>
+        <field name="street">Хрещатик</field>
+        <field name="house_num">1</field>
+        <field name="post_index">01001</field>
+        <field name="latitude">50.4501</field>
+        <field name="longitude">30.5234</field>
+        <field name="is_regional_center" eval="True"/>
+    </record>
+    <record id="geodata_address_demo_lviv" model="dm.geodata.address">
+        <field name="geodata_id">9000002</field>
+        <field name="region">Львівська</field>
+        <field name="city">Львів</field>
+        <field name="settlement_type">місто</field>
+        <field name="str_type">пл.</field>
+        <field name="street">Ринок</field>
+        <field name="house_num">1</field>
+        <field name="post_index">79000</field>
+        <field name="latitude">49.8419</field>
+        <field name="longitude">24.0315</field>
+        <field name="is_regional_center" eval="True"/>
+    </record>
+</odoo>

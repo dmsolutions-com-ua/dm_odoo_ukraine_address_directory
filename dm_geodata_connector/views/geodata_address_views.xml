@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="geodata_address_view_form" model="ir.ui.view">
+        <field name="name">dm.geodata.address.form</field>
+        <field name="model">dm.geodata.address</field>
+        <field name="arch" type="xml">
+            <form string="Geodata.online Address" edit="false" create="false"
+                  class="o_geodata_address_form">
+                <sheet>
+                    <group>
+                        <group string="Main Information">
+                            <field name="address_string" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Administrative" name="admin">
+                            <group>
+                                <group string="Address">
+                                    <field name="region" readonly="1"/>
+                                    <field name="area" readonly="1"/>
+                                    <field name="hromada" readonly="1"/>
+                                    <field name="settlement_type" readonly="1"/>
+                                    <field name="city" readonly="1"/>
+                                    <field name="city_district" readonly="1"/>
+                                    <field name="str_type" readonly="1"/>
+                                    <field name="street" readonly="1"/>
+                                    <field name="house_num" readonly="1"/>
+                                    <field name="house_num_add" readonly="1"/>
+                                </group>
+                                <group string="Codes and Status">
+                                    <field name="post_index" readonly="1"/>
+                                    <field name="koatuu" readonly="1"/>
+                                    <field name="kato" readonly="1"/>
+                                    <field name="phone_code" readonly="1"/>
+                                    <field name="is_regional_center" readonly="1"/>
+                                    <field name="is_district_center" readonly="1"/>
+                                    <field name="terr_status" readonly="1"/>
+                                    <field name="write_date"/>
+                                    <field name="company_id" readonly="1" invisible="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Coordinates" name="coords">
+                            <group>
+                                <group string="Building">
+                                    <field name="latitude" readonly="1"/>
+                                    <field name="longitude" readonly="1"/>
+                                </group>
+                                <group string="Settlement">
+                                    <field name="latitude_settlement" readonly="1"/>
+                                    <field name="longitude_settlement" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="English Transliteration" name="en">
+                            <group>
+                                <group string="Current">
+                                    <field name="region_en" readonly="1"/>
+                                    <field name="area_en" readonly="1"/>
+                                    <field name="hromada_en" readonly="1"/>
+                                    <field name="settlement_type_en" readonly="1"/>
+                                    <field name="city_en" readonly="1"/>
+                                    <field name="city_district_en" readonly="1"/>
+                                    <field name="str_type_en" readonly="1"/>
+                                    <field name="street_en" readonly="1"/>
+                                </group>
+                                <group string="Old names">
+                                    <field name="region_old_en" readonly="1"/>
+                                    <field name="area_old_en" readonly="1"/>
+                                    <field name="hromada_old_en" readonly="1"/>
+                                    <field name="settlement_type_old_en" readonly="1"/>
+                                    <field name="city_old_en" readonly="1"/>
+                                    <field name="str_type_old_en" readonly="1"/>
+                                    <field name="street_old_en" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Metro" name="metro">
+                            <group>
+                                <field name="metro_station" readonly="1"/>
+                                <field name="metro_line" readonly="1"/>
+                                <field name="metro_distance" readonly="1"/>
+                            </group>
+                        </page>
+
+                        <page string="Old Names" name="old">
+                            <group>
+                                <group>
+                                    <field name="region_old" readonly="1"/>
+                                    <field name="area_old" readonly="1"/>
+                                    <field name="hromada_old" readonly="1"/>
+                                    <field name="suburb_old" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="settlement_type_old" readonly="1"/>
+                                    <field name="city_old" readonly="1"/>
+                                    <field name="str_type_old" readonly="1"/>
+                                    <field name="street_old" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <page string="Additional" name="additional">
+                            <group>
+                                <field name="comments" readonly="1"/>
+                                <field name="description" readonly="1"/>
+                            </group>
+                        </page>
+
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="geodata_address_view_list" model="ir.ui.view">
+        <field name="name">dm.geodata.address.list</field>
+        <field name="model">dm.geodata.address</field>
+        <field name="arch" type="xml">
+            <list string="Geodata Addresses">
+                <field name="city"/>
+                <field name="street" optional="show"/>
+                <field name="house_num" optional="show"/>
+                <field name="region"/>
+                <field name="area" optional="hide"/>
+                <field name="post_index" optional="show"/>
+                <field name="kato" optional="hide"/>
+                <field name="koatuu" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="geodata_address_view_search" model="ir.ui.view">
+        <field name="name">dm.geodata.address.search</field>
+        <field name="model">dm.geodata.address</field>
+        <field name="arch" type="xml">
+            <search string="Search Addresses">
+                <field name="address_string" string="Address"/>
+                <field name="city"/>
+                <field name="region"/>
+                <field name="street"/>
+                <field name="post_index"/>
+                <group name="group_by">
+                    <filter string="Region" name="group_region" context="{'group_by': 'region'}"/>
+                    <filter string="Settlement" name="group_city" context="{'group_by': 'city'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="geodata_address_action" model="ir.actions.act_window">
+        <field name="name">Addresses (Geodata)</field>
+        <field name="res_model">dm.geodata.address</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem id="menu_geodata_address" name="Addresses"
+              parent="menu_geodata_root" action="geodata_address_action"
+              sequence="20"/>
+
+</odoo>

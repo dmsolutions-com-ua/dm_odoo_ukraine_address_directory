@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+
+    <t t-name="dm_geodata_connector.GeodataAutocompleteField">
+        <div class="o_geodata_autocomplete position-relative"
+             t-ref="root"
+             t-att-class="{ 'o_geodata_manual': isManual }">
+            <input type="text" class="o_input"
+                   t-ref="input"
+                   t-att-placeholder="props.placeholder"
+                   role="combobox"
+                   aria-autocomplete="list"
+                   t-att-aria-expanded="state.open and state.suggestions.length ? 'true' : 'false'"
+                   t-att-aria-controls="listId"
+                   t-att-aria-activedescendant="state.activeIndex >= 0 ? (listId + '_' + state.activeIndex) : undefined"
+                   t-on-input="onInput"
+                   t-on-keydown="onKeydown"
+                   t-on-blur="onBlur"/>
+            <span t-if="isManual" class="o_geodata_manual_icon fa fa-info-circle"
+                  title="Entered manually (not found in the directory)"/>
+            <ul t-if="state.open and state.suggestions.length"
+                t-ref="list"
+                t-att-id="listId"
+                role="listbox"
+                class="o_geodata_suggestions o-autocomplete--dropdown-menu dropdown-menu ui-widget show position-absolute">
+                <li t-foreach="state.suggestions" t-as="suggestion" t-key="suggestion_index"
+                    t-att-id="listId + '_' + suggestion_index"
+                    role="option"
+                    t-att-aria-selected="suggestion_index === state.activeIndex ? 'true' : 'false'"
+                    class="o_geodata_suggestions__item o-autocomplete--dropdown-item dropdown-item ui-menu-item text-truncate"
+                    t-att-class="{ focus: suggestion_index === state.activeIndex }"
+                    t-att-title="suggestion.label"
+                    t-on-mousedown="(ev) => ev.preventDefault()"
+                    t-on-mouseenter="() => this.onItemHover(suggestion_index)"
+                    t-on-click="() => this.onSelect(suggestion)">
+                    <t t-esc="suggestion.label"/>
+                </li>
+            </ul>
+        </div>
+    </t>
+
+</templates>
