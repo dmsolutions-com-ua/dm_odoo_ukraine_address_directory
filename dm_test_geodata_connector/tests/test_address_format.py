@@ -226,6 +226,14 @@ class TestAddressFormat(TransactionCase):
             addr._render_api_template("{City}", "ua", escape_values=True),
             "A&lt;b&gt;&amp;")
 
+    # --- Поле address_display форми довідника = display-шаблон -----------------
+    def test_address_display_field_uses_display_template(self):
+        # «Повна адреса» на формі довідника рендериться тим самим шаблоном, що й
+        # рядок на картці контакту (address_format_display).
+        self.assertEqual(
+            self.address.address_display,
+            "УКРАЇНА, 01001, місто Київ, вул. Хрещатик, 1")
+
     # --- Дефолтний display-шаблон першого рядка картки ------------------------
     def test_default_display_template(self):
         result = self.address._render_api_template(
