@@ -122,3 +122,8 @@ msgstr "Щоб увімкнути підказки адрес, оберіть к
 #: model_terms:ir.ui.view,arch_db:dm_geodata_contact.view_partner_form_geodata
 msgid "Step-by-step address search and automatic address data filling"
 msgstr "Покроковий пошук адреси та автоматичне заповнення адресних даних"
+
+#. module: dm_geodata_contact
+#: model_terms:ir.ui.view,arch_db:dm_geodata_contact.view_partner_form_geodata
+msgid "GEODATA.online - address normalization and validation service for Ukraine"
+msgstr "GEODATA.online - сервіс нормалізації та актуалізації адрес України"

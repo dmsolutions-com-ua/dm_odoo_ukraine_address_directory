@@ -103,10 +103,7 @@
                     </group>
                     <div class="text-muted mt-3" invisible="not has_geodata_credential">
                         <a href="https://geodata.online" target="_blank"
-                           class="text-primary text-decoration-underline">
-                            GEODATA.online - address normalization and validation
-                            service for Ukraine
-                        </a>
+                           class="text-primary text-decoration-underline">GEODATA.online - address normalization and validation service for Ukraine</a>
                     </div>
                 </page>
             </xpath>

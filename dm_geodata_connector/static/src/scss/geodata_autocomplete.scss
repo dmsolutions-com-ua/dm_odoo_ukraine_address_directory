@@ -83,6 +83,22 @@
     td { overflow-wrap: anywhere; }
 }
 
+// Адреси «для документів»/«для конвертів» (CopyClipboardChar) — показувати весь
+// вміст багаторядково замість обрізання трикрапкою. Перевизначаємо core-правило
+// web (.o_field_CopyClipboardChar > div > span: nowrap/ellipsis), зберігаючи
+// кнопку копіювання. Таргет за іменем поля — діє лише на цих 4 полях.
+.o_field_CopyClipboardChar[name="geodata_address_full_ua"],
+.o_field_CopyClipboardChar[name="geodata_address_full_en"],
+.o_field_CopyClipboardChar[name="geodata_address_letter_ua"],
+.o_field_CopyClipboardChar[name="geodata_address_letter_en"] {
+    > div > span:first-child {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        word-break: break-word;
+    }
+}
+
 // Форма «Адреси (Geodata)»: мітка/значення = 50%/50% (inner-group = CSS grid),
 // бо українські назви полів довгі й переносяться на 2-3 рядки.
 .o_geodata_address_form .o_inner_group {
