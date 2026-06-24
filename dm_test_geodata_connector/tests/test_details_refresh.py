@@ -79,3 +79,15 @@ class TestDetailsRefresh(TransactionCase):
         self.assertIn("Харків", display_after)
         self.assertNotIn("Хрещатик", display_after,
                          "рядок адреси не оновився — лишилась стара вулиця")
+
+    def test_owner_zip_overrides_directory_index(self):
+        # Індекс, введений власником, має пріоритет над довідниковим post_index
+        # у документних/конвертних адресах (і в рядку картки).
+        self.address.post_index = "01001"
+        self.partner.zip = "99999"
+        out = self.partner.geodata_address_full_ua or ""
+        self.assertIn("99999", out)
+        self.assertNotIn("01001", out)
+        # Без власного zip — береться довідниковий індекс.
+        self.partner.zip = False
+        self.assertIn("01001", self.partner.geodata_address_full_ua or "")
