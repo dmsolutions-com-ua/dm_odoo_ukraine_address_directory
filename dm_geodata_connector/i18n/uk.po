@@ -54,6 +54,12 @@ msgid "Additional"
 msgstr "Додатково"
 
 #. module: dm_geodata_connector
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__address_display
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__address_string
+msgid "Full Address"
+msgstr "Повна адреса"
+
+#. module: dm_geodata_connector
 #: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
 msgid "Information as of date"
 msgstr "Інформація на дату"

@@ -8,10 +8,8 @@
             <form string="Geodata.online Address" edit="false" create="false"
                   class="o_geodata_address_form">
                 <sheet>
-                    <group>
-                        <group string="Main Information">
-                            <field name="address_display" readonly="1"/>
-                        </group>
+                    <group string="Main Information" class="o_geodata_main_info">
+                        <field name="address_display" readonly="1"/>
                     </group>
                     <notebook>
                         <page string="Administrative" name="admin">
