@@ -17,7 +17,7 @@
                    t-on-keydown="onKeydown"
                    t-on-blur="onBlur"/>
             <span t-if="isManual" class="o_geodata_manual_icon fa fa-info-circle"
-                  title="Entered manually (not found in the directory)"/>
+                  t-att-title="manualHintTitle"/>
             <ul t-if="state.open and state.suggestions.length"
                 t-ref="list"
                 t-att-id="listId"

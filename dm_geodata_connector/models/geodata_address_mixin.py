@@ -50,6 +50,7 @@ class GeodataAddressMixin(models.AbstractModel):
     # (підказок). Керує індикатором введених вручну даних (червона рамка).
     geodata_city_verified = fields.Boolean(compute="_compute_geodata_verified")
     geodata_street_verified = fields.Boolean(compute="_compute_geodata_verified")
+    geodata_zip_verified = fields.Boolean(compute="_compute_geodata_verified")
     geodata_verified_level = fields.Char(
         compute="_compute_geodata_verified", string="Verified up to")
 
@@ -146,6 +147,14 @@ class GeodataAddressMixin(models.AbstractModel):
                  for ph, attr in self._OWNER_EXTRA_FIELDS.items()}
         street2_field = self._geodata_fields.get("street2", "street2")
         extra["street2"] = self._owner_field_value(street2_field)
+        # Індекс власника має пріоритет у шаблонах адрес (документи/конверти/рядок
+        # картки): якщо власник увів свій zip — показуємо саме його ({Index_}),
+        # навіть коли в довіднику є post_index. Порожній zip -> лишається
+        # довідниковий індекс.
+        zip_field = self._geodata_fields.get("zip")
+        owner_zip = self[zip_field] if zip_field in self._fields else False
+        if owner_zip:
+            extra["Index_"] = owner_zip
         return extra
 
     # Поля вкладки — нестора́жні compute із пов'язаної dm.geodata.address, яку
@@ -239,11 +248,14 @@ class GeodataAddressMixin(models.AbstractModel):
     @api.depends(lambda self: [
         "geodata_address_id", "geodata_address_id.settlement_ref",
         "geodata_address_id.street_ref", "geodata_address_id.house_ref",
+        "geodata_address_id.post_index",
     ] + ([self._geodata_fields["street"]]
          # Поле вулиці власника існує лише на конкретних моделях-bridge, а НЕ на
          # абстрактному міксині — інакше резолвинг depends на абстрактній моделі
          # падає й валить усі поля міксина (has_geodata_credential тощо).
-         if self._geodata_fields["street"] in self._fields else []))
+         if self._geodata_fields["street"] in self._fields else [])
+      + ([self._geodata_fields["zip"]]
+         if self._geodata_fields.get("zip") in self._fields else []))
     def _compute_geodata_verified(self):
         # Тумблера «старі назви» більше немає -> валідовану вулицю для порівняння
         # ручних правок будуємо без історичних назв.
@@ -271,6 +283,14 @@ class GeodataAddressMixin(models.AbstractModel):
                             and not rec._is_house_only_change(geo, owner_street)):
                         street_v = False
             house_v = bool(addr and addr.house_ref)
+            # Індекс: підтверджений, якщо власників zip збігається з довідниковим
+            # post_index. Ручна правка (або відсутність у довіднику) -> не
+            # підтверджено -> помітка «введено вручну».
+            zip_field = rec._geodata_fields.get("zip")
+            owner_zip = rec[zip_field] if zip_field in rec._fields else False
+            rec.geodata_zip_verified = bool(
+                addr and addr.post_index and owner_zip
+                and rec._norm(owner_zip) == rec._norm(addr.post_index))
             rec.geodata_city_verified = city_v
             rec.geodata_street_verified = street_v
             if house_v:

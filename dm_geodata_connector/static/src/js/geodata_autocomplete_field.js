@@ -2,6 +2,7 @@
 
 import { Component, useState, useRef, onWillUnmount, onMounted, onPatched, useExternalListener } from "@odoo/owl";
 import { registry } from "@web/core/registry";
+import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 
@@ -133,6 +134,11 @@ export class GeodataAutocompleteField extends Component {
         // вказати це через country_code); ніколи на не-UA / невідомій країні.
         const strictUa = data.country_code === "UA";
         return Boolean(strictUa && hintOn && this.value && !data[verifiedField]);
+    }
+
+    // Підказка індикатора «введено вручну» — перекладається за мовою користувача.
+    get manualHintTitle() {
+        return _t("Entered manually (not found in the directory)");
     }
 
     get countryOk() {
