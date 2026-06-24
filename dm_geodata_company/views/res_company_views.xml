@@ -15,6 +15,7 @@
                 <field name="geodata_show_manual_hint" invisible="1"/>
                 <field name="geodata_city_verified" invisible="1"/>
                 <field name="geodata_street_verified" invisible="1"/>
+                <field name="geodata_zip_verified" invisible="1"/>
                 <field name="country_code" invisible="1"/>
             </xpath>
 
@@ -49,6 +50,15 @@
                        invisible="country_code != 'UA'"/>
                 <field name="hromada" class="o_geodata_addr_col" readonly="1" force_save="1"
                        invisible="country_code != 'UA'"/>
+            </xpath>
+
+            <!-- Індекс: лише індикатор «введено вручну» (без autocomplete). -->
+            <xpath expr="//div[hasclass('o_address_format')]//field[@name='zip']" position="attributes">
+                <attribute name="widget">geodata_autocomplete</attribute>
+                <attribute name="options">{
+                    'verified_field': 'geodata_zip_verified',
+                    'hint_field': 'geodata_show_manual_hint'
+                }</attribute>
             </xpath>
 
         </field>

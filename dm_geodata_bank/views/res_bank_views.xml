@@ -16,6 +16,7 @@
                 <field name="geodata_show_manual_hint" invisible="1"/>
                 <field name="geodata_city_verified" invisible="1"/>
                 <field name="geodata_street_verified" invisible="1"/>
+                <field name="geodata_zip_verified" invisible="1"/>
                 <field name="country_code" invisible="1"/>
             </xpath>
 
@@ -40,6 +41,15 @@
                     'verified_field': 'geodata_street_verified',
                     'hint_field': 'geodata_show_manual_hint',
                     'min_chars': 3
+                }</attribute>
+            </xpath>
+
+            <!-- Індекс: лише індикатор «введено вручну» (без autocomplete). -->
+            <xpath expr="//field[@name='zip']" position="attributes">
+                <attribute name="widget">geodata_autocomplete</attribute>
+                <attribute name="options">{
+                    'verified_field': 'geodata_zip_verified',
+                    'hint_field': 'geodata_show_manual_hint'
                 }</attribute>
             </xpath>
 

@@ -18,6 +18,11 @@ msgid "Yes"
 msgstr "Так"
 
 #. module: dm_geodata_connector
+#: code:addons/dm_geodata_connector/static/src/js/geodata_autocomplete_field.js:0
+msgid "Entered manually (not found in the directory)"
+msgstr "Введено вручну (не знайдено в довіднику)"
+
+#. module: dm_geodata_connector
 #: model:ir.actions.act_window,name:dm_geodata_connector.geodata_api_credential_action
 #: model:ir.ui.menu,name:dm_geodata_connector.menu_geodata_api_credential
 msgid "API Credentials"
