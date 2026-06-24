@@ -105,6 +105,13 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
+// «Повна адреса» (address_display) — значення на всю ширину форми (мітка по
+// контенту), щоб довгий display-рядок не переносився на 2-3 рядки. Перебиває
+// правило 50/50 вище (вища специфічність).
+.o_geodata_address_form .o_geodata_main_info.o_inner_group {
+    grid-template-columns: max-content minmax(0, 1fr);
+}
+
 // Район / Громада — вставлені поля адресного блоку: половина ширини, поряд.
 .o_form_editable .o_address_format .o_geodata_addr_col {
     display: inline-block;
