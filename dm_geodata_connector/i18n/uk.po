@@ -55,6 +55,11 @@ msgstr "Додатково"
 
 #. module: dm_geodata_connector
 #: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
+msgid "Information as of date"
+msgstr "Інформація на дату"
+
+#. module: dm_geodata_connector
+#: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
 msgid "Address"
 msgstr "Адреса"
 

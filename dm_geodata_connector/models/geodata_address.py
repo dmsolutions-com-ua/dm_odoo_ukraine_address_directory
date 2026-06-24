@@ -172,6 +172,9 @@ class GeodataAddress(models.Model):
     # Формати для документів / листів (UA + EN)
     address_ua_postal = fields.Char(compute="_compute_address_formats", store=True)
     address_ua_short = fields.Char(compute="_compute_address_formats", store=True)
+    # «Повна адреса» на формі довідника — за тим самим шаблоном, що й рядок на
+    # картці контакту (address_format_display).
+    address_display = fields.Char(string="Full Address", compute="_compute_full_addresses", store=True)
     address_full_ua = fields.Char(string="Full Address (UA)", compute="_compute_full_addresses", store=True)
     address_full_en = fields.Char(string="Full Address (EN)", compute="_compute_full_addresses", store=True)
     address_letter_ua = fields.Char(string="Letter Address (UA)", compute="_compute_full_addresses", store=True)
@@ -221,6 +224,7 @@ class GeodataAddress(models.Model):
         credential = self.env["dm.geodata.api.credential"].sudo().get_credential()
         store_en = credential.store_english if credential else True
         for rec in self:
+            rec.address_display = rec._format_display("ua", credential)
             rec.address_full_ua = rec._format_full_address("ua", credential)
             rec.address_letter_ua = rec._format_letter_address("ua", credential)
             if store_en:
@@ -528,6 +532,15 @@ class GeodataAddress(models.Model):
             return credential[fname]
         default = self.env["dm.geodata.api.credential"].default_get([fname])
         return default.get(fname) or ""
+
+    def _format_display(self, lang="ua", credential=None):
+        """«Повна адреса» для форми довідника — тим самим шаблоном, що й рядок на
+        картці контакту (address_format_display). Owner-плейсхолдери
+        ({Apartment}/{street2}/…) тут порожні й стискаються рушієм."""
+        self.ensure_one()
+        credential = credential or self._template_credential()
+        return self._render_api_template(
+            self._template_or_default(credential, "address_format_display"), lang)
 
     def _format_full_address(self, lang="ua", credential=None):
         self.ensure_one()
