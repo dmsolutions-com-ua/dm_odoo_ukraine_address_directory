@@ -51,27 +51,8 @@
                        invisible="country_code != 'UA'"/>
             </xpath>
 
-            <!-- Однорядковий пошук + документні адреси (форма банку не має
-                 notebook, тож це йде у групу після поля country). -->
-            <xpath expr="//field[@name='country']" position="after">
-                <group colspan="2"
-                       invisible="country_code != 'UA' or not has_geodata_credential">
-                    <field name="geodata_search"
-                           widget="geodata_autocomplete"
-                           placeholder="Search Address (Region, City, Street, House)..."
-                           options="{
-                               'source_method': 'geodata_autocomplete_full_address',
-                               'on_select_method': 'apply_address',
-                               'progressive': True,
-                               'min_chars': 3
-                           }"
-                           class="oe_edit_only"/>
-                    <field name="geodata_address_full_ua" string="Document (UA)"
-                           widget="CopyClipboardChar"/>
-                    <field name="geodata_address_letter_ua" string="Letter (UA)"
-                           widget="CopyClipboardChar"/>
-                </group>
-            </xpath>
+            <!-- Деталі/документні адреси — лише на картці контакту. Тут лишаємо
+                 тільки інлайн-автопідказку міста/вулиці + Район/Громада. -->
 
         </field>
     </record>
