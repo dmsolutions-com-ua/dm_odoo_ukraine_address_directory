@@ -8,10 +8,8 @@
             <form string="Geodata.online Address" edit="false" create="false"
                   class="o_geodata_address_form">
                 <sheet>
-                    <group>
-                        <group string="Main Information">
-                            <field name="address_string" readonly="1"/>
-                        </group>
+                    <group string="Main Information" class="o_geodata_main_info">
+                        <field name="address_display" readonly="1"/>
                     </group>
                     <notebook>
                         <page string="Administrative" name="admin">
@@ -36,7 +34,7 @@
                                     <field name="is_regional_center" readonly="1"/>
                                     <field name="is_district_center" readonly="1"/>
                                     <field name="terr_status" readonly="1"/>
-                                    <field name="write_date"/>
+                                    <field name="write_date" string="Information as of date"/>
                                     <field name="company_id" readonly="1" invisible="1"/>
                                 </group>
                             </group>
