@@ -151,7 +151,7 @@
     </record>
 
     <record id="geodata_address_action" model="ir.actions.act_window">
-        <field name="name">Addresses (Geodata)</field>
+        <field name="name">Addresses (Geodata.online)</field>
         <field name="res_model">dm.geodata.address</field>
         <field name="view_mode">list,form</field>
     </record>
