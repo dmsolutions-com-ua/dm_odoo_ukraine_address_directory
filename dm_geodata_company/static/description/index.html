@@ -1,27 +1,65 @@
-<section class="oe_container">
-  <div class="oe_row oe_spaced">
-    <div class="oe_span12" style="text-align:center;">
-      <h1 class="oe_slogan" style="color:#1a73e8;">Адреси України на компаніях</h1>
-      <h3 class="oe_slogan" style="color:#666;">
-        Автозаповнення адрес Geodata.online на формі компанії
-        (<code>res.company</code>).
-      </h3>
-    </div>
-  </div>
-  <div class="oe_row oe_spaced">
-    <div class="oe_span12">
-      <p>
-        Додає підказки міста та вулиці безпосередньо у форму компанії (Налаштування
-        → Компанії), автоматично заповнює район і громаду. Адресу компанії
-        синхронізовано з її контактом, а власний зв'язок з довідником —
-        індивідуальний (1:1). Гейт за країною — Україна.
-      </p>
-      <p>
-        Тонка інтеграція: уся логіка — у ядрі <code>dm_geodata_connector</code>.
-        <strong>Auto-install</strong>: вмикається автоматично разом із набором
-        Geodata.online.
-      </p>
-      <p style="color:#888;">© DM Solutions · <a href="https://geodata.online" target="_blank">geodata.online</a></p>
-    </div>
-  </div>
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Адреси України на компаніях</title>
+<style>
+    /* Палітра бренду geodata.online */
+    :root { --gd-ink:#021023; --gd-royal:#1356c0; --gd-gold:#fbba00;
+            --gd-line:#e6e8e9; --gd-stripe:#f5f7fa; --gd-muted:#758696; }
+    .gd-desc { max-width: 920px; margin: 0 auto; padding: 28px 24px 48px;
+        color: var(--gd-ink); background:#fff;
+        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 16px; line-height: 1.7; }
+    .gd-desc h1 { color: var(--gd-ink); text-align: center;
+        font-size: 30px; line-height: 1.25; margin: 8px 0 4px; }
+    .gd-desc h1 + p { text-align: center; color: var(--gd-muted); font-size: 18px;
+        margin-top: 0; margin-bottom: 26px; }
+    .gd-desc h2 { color: var(--gd-ink); font-size: 22px;
+        margin: 38px 0 12px; padding-bottom: 8px;
+        border-bottom: 2px solid var(--gd-royal); }
+    .gd-desc p { margin: 0 0 14px; }
+    .gd-desc strong { color: var(--gd-royal); }
+    .gd-desc ul, .gd-desc ol { margin: 0 0 16px; padding-left: 26px; }
+    .gd-desc li { margin: 4px 0; }
+    .gd-desc a { color: var(--gd-royal); text-decoration: none; }
+    .gd-desc a:hover { text-decoration: underline; }
+    .gd-desc code { background: var(--gd-stripe); border: 1px solid var(--gd-line);
+        border-radius: 4px; padding: 1px 5px; font-size: 90%; }
+    .gd-desc .gd-foot { color: var(--gd-muted); font-size: 14px; margin-top: 28px; }
+    .gd-desc img { display: block; max-width: 100%; height: auto;
+        margin: 18px auto; padding: 6px; background: #fff;
+        border: 1px solid var(--gd-line); border-radius: 10px;
+        box-shadow: 0 4px 14px rgba(19,86,192,.10); }
+    .gd-desc table { width: 100%; border-collapse: collapse;
+        margin: 16px 0 24px; font-size: 15px;
+        box-shadow: 0 2px 10px rgba(2,16,35,.06);
+        border-radius: 10px; overflow: hidden; }
+    .gd-desc th { background: var(--gd-royal); color: #fff; text-align: left;
+        font-weight: 600; padding: 11px 14px; }
+    .gd-desc td { padding: 10px 14px; border: 1px solid var(--gd-line);
+        vertical-align: top; }
+    .gd-desc tbody tr:nth-child(even) td { background: var(--gd-stripe); }
+    .gd-desc td p { margin: 0; }
+    .gd-desc td ul { margin: 4px 0 0; }
+</style>
+</head>
+<body>
+<section class="gd-desc">
+<h1>Адреси України на компаніях</h1>
+<p>Автозаповнення адрес Geodata.online на формі компанії (<code>res.company</code>).</p>
+<p>
+Додає вбудовані підказки міста та вулиці безпосередньо у форму компанії
+(Налаштування → Компанії) та автоматично заповнює район і громаду. Адресу
+компанії синхронізовано з її контактом, а власний зв’язок із довідником —
+індивідуальний (1:1). Гейт за країною — Україна.
+</p>
+<p>
+Тонка інтеграція: уся логіка — у ядрі <code>dm_geodata_connector</code>. <strong>Auto-install</strong>: вмикається автоматично разом із набором
+Geodata.online.
+</p>
+<p class="gd-foot">© DM Solutions · <a href="https://geodata.online" target="_blank" rel="noopener">geodata.online</a></p>
 </section>
+</body>
+</html>

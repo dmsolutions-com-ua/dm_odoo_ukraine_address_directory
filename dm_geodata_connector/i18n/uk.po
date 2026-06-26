@@ -141,8 +141,8 @@ msgstr "Адреси"
 
 #. module: dm_geodata_connector
 #: model:ir.actions.act_window,name:dm_geodata_connector.geodata_address_action
-msgid "Addresses (Geodata)"
-msgstr "Адреси (Geodata)"
+msgid "Addresses (Geodata.online)"
+msgstr "Адреси (Geodata.online)"
 
 #. module: dm_geodata_connector
 #: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
