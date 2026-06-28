@@ -1,0 +1,65 @@
+name: Перевірка версій маніфестів
+
+# Падає, якщо в PR змінено код модуля, але version у його __manifest__.py
+# не піднято. Серію (перші два компоненти, напр. 19.0) не чіпаємо — це версія Odoo.
+
+on:
+  pull_request:
+
+jobs:
+  manifest-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (повна історія)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Підтягнути базову гілку
+        run: git fetch --no-tags origin "$GITHUB_BASE_REF"
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+
+      - name: Перевірити бамп version у змінених модулях
+        env:
+          GITHUB_BASE_REF: ${{ github.base_ref }}
+        run: |
+          set -euo pipefail
+          BASE="origin/${GITHUB_BASE_REF}"
+          echo "Базова гілка: ${BASE}"
+
+          fail=0
+          declare -A seen
+
+          # Усі змінені в PR файли (від точки розгалуження до HEAD)
+          while IFS= read -r f; do
+            mod="${f%%/*}"
+            man="${mod}/__manifest__.py"
+            [ -f "$man" ] || continue                 # не модуль Odoo — пропускаємо
+            [ -n "${seen[$mod]:-}" ] && continue
+            seen[$mod]=1
+
+            # Чи є в модулі зміни коду (крім самого маніфесту)?
+            code=$(git diff --name-only "${BASE}...HEAD" -- "$mod" \
+                   | grep -E '\.(py|xml|csv|js)$' \
+                   | grep -v '__manifest__.py' || true)
+            [ -z "$code" ] && continue
+
+            # Чи піднято рядок version у маніфесті?
+            if git diff "${BASE}...HEAD" -- "$man" | grep -qE '^\+[[:space:]]*"version"'; then
+              echo "✓ ${mod}: version піднято"
+            else
+              echo "✗ ${mod}: змінено код, але version у __manifest__.py НЕ піднято"
+              fail=1
+            fi
+          done < <(git diff --name-only "${BASE}...HEAD")
+
+          if [ "$fail" -ne 0 ]; then
+            echo ""
+            echo "Підніми version у відповідних __manifest__.py:"
+            echo "  patch (X.Y.Z+1) — багфікс без зміни схеми;"
+            echo "  minor (X.Y+1.0) — нова сумісна функціональність;"
+            echo "  major (X+1.0.0) — ламкі зміни / потрібна міграція."
+            exit 1
+          fi
+          echo "OK: усі змінені модулі мають піднятий version."
