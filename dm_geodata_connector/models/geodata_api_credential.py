@@ -64,7 +64,7 @@ class GeodataApiCredential(models.Model):
         string="Password", required=True, groups="base.group_system")
     store_english = fields.Boolean(
         string="Store English Transliteration",
-        default=True,
+        default=False,
     )
     # Шаблони адрес (документи/конверти): імена плейсхолдерів = імена полів API,
     # значення сирі 1:1 (без авто-склейок). {CityFull}/{StreetFull} — розумне

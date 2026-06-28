@@ -170,7 +170,7 @@ class GeodataAddressMixin(models.AbstractModel):
          if self._geodata_fields.get(k) in self._fields])
     def _compute_geodata_documents(self):
         credential = self.env["dm.geodata.api.credential"].sudo().get_credential()
-        store_en = credential.store_english if credential else True
+        store_en = credential.store_english if credential else False
         for rec in self:
             addr = rec.geodata_address_id.sudo()
             extra = rec._geodata_owner_extra()

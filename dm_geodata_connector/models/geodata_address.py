@@ -222,7 +222,7 @@ class GeodataAddress(models.Model):
                  "metro_station", "metro_line", "metro_distance", "write_date")
     def _compute_full_addresses(self):
         credential = self.env["dm.geodata.api.credential"].sudo().get_credential()
-        store_en = credential.store_english if credential else True
+        store_en = credential.store_english if credential else False
         for rec in self:
             rec.address_display = rec._format_display("ua", credential)
             rec.address_full_ua = rec._format_full_address("ua", credential)
