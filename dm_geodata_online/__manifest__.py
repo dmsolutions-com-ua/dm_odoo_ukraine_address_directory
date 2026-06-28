@@ -8,7 +8,9 @@
     "website": "https://geodata.online",
     "category": "Extra Tools",
     "license": "LGPL-3",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
+    # Обкладинка модуля в Apps Store (без цього ключа магазин показує іконку).
+    "images": ["static/description/cover.png"],
     # Парасольковий застосунок: його встановлення підтягує ядро й дозволяє
     # auto_install-бриджам (dm_geodata_contact/crm/company) підключитися там, де є
     # відповідний застосунок. Видалення каскадно прибирає ці бриджі (ядро
