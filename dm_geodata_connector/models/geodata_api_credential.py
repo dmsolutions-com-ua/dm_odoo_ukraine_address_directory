@@ -99,7 +99,7 @@ class GeodataApiCredential(models.Model):
     details_format_col2 = fields.Text(
         string="Address details: column 2",
         default='''<span style="display:inline-block;background:#009739;color:#fff;font-weight:bold;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;margin-right:4px;">М</span><span style="display:inline-block;background:#009739;color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;margin-right:4px;">{MetroStation}</span>
-<span style="display:inline-block;background:#0057B8;color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;margin-right:4px;">{MetroLine}</span>
+<span style="display:inline-block;background:{MetroLineColor};color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;margin-right:4px;">{MetroLine}</span>
 <span style="display:inline-block;background:#555;color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;">{MetroDistance} м</span>
 <table style="border-collapse:collapse; width:100%; font-family:Arial, sans-serif;">
 <tr><td style="padding:6px; width:50%;"><a href="https://www.google.com/maps?q={Lat_},{Long_}" target="_blank" style="display:block;text-align:center;background:#1a73e8;color:#fff;font-weight:bold;padding:6px 0;border-radius:4px;font-size:12px;text-decoration:none;">Google Maps</a></td><td style="padding:6px; width:50%;"><a href="https://www.openstreetmap.org/?mlat={Lat_}&mlon={Long_}#map=18/{Lat_}/{Long_}" target="_blank" style="display:block;text-align:center;background:#77B255;color:#fff;font-weight:bold;padding:6px 0;border-radius:4px;font-size:12px;text-decoration:none;">OpenStreetMap</a></td></tr>
