@@ -213,6 +213,10 @@ headers (with the Authorization token masked). Each entry carries a `company_id`
 multi-company `ir.rule`, so a manager sees only their own company's logs. Entries
 are auto-purged by the daily cleanup cron after `log_retention_days`.
 
+Every outbound request (token refresh and all API calls) is sent with a branded
+`User-Agent` — `dm_geodata_connector/<module version> (Odoo <release.version>)` — so
+the Geodata.online side can attribute connector traffic by module/Odoo version.
+
 ## Health monitoring
 Because a misconfiguration is silent (no active credential → autocomplete simply
 does nothing, and no API call is even attempted), the credential is **proactively
