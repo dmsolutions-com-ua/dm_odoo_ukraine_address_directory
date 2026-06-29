@@ -4,7 +4,7 @@ from datetime import timedelta
 import pytz
 import requests
 
-from odoo import _, api, fields, models, release
+from odoo import _, api, fields, models, release, tools
 from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
@@ -241,6 +241,19 @@ class GeodataApiCredential(models.Model):
             (endpoint or "").lstrip("/"),
         )
 
+    @api.model
+    @tools.ormcache()
+    def _user_agent(self):
+        """Брендований User-Agent для всіх запитів до Geodata.online: назва модуля,
+        його встановлена версія та повна версія Odoo (release.version кодує серію й
+        редакцію — community/enterprise/saas). Кешується через ormcache, який
+        автоматично скидається при оновленні модуля."""
+        module = self.env["ir.module.module"].sudo().search(
+            [("name", "=", "dm_geodata_connector")], limit=1
+        )
+        version = module.installed_version or release.version
+        return "dm_geodata_connector/%s (Odoo %s)" % (version, release.version)
+
     def _auth_headers(self):
         self.ensure_one()
         token = self._get_token()
@@ -251,6 +264,7 @@ class GeodataApiCredential(models.Model):
             "Content-Type": "application/json",
             "Accept": "application/json",
             "Authorization": "Bearer %s" % (token or ""),
+            "User-Agent": self._user_agent(),
         }
 
     def _refresh_token(self):
@@ -270,7 +284,10 @@ class GeodataApiCredential(models.Model):
                     "password": cred.api_password,
                     "grant_type": "password",
                 },
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                headers={
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "User-Agent": self._user_agent(),
+                },
                 timeout=60,
             )
         except requests.RequestException as err:

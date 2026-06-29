@@ -12,3 +12,4 @@ from . import test_translit_consistency
 from . import test_old_names_reset
 from . import test_details_refresh
 from . import test_perf_settings
+from . import test_user_agent
