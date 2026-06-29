@@ -1,5 +1,5 @@
 {
-    "name": "Ukraine Address Reference Directory",
+    "name": "Ukraine Address — Geodata.online Connector",
     "summary": "Integration with Geodata.online API for address autocomplete and "
     "normalization in Ukraine (self-contained, Odoo 19) · ядро інтеграції з API "
     "Geodata.online, автозаповнення та нормалізація адрес України, адресний довідник "
@@ -8,7 +8,7 @@
     "website": "https://geodata.online",
     "category": "Hidden",
     "license": "LGPL-3",
-    "version": "19.0.1.2.0",
+    "version": "19.0.1.2.1",
     "depends": [
         "base",
         "base_geolocalize",

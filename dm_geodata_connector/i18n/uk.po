@@ -1,4 +1,4 @@
-# Translation of Ukraine Address Reference Directory (dm_geodata_connector).
+# Translation of Ukraine Address — Geodata.online Connector (dm_geodata_connector).
 # This file contains the Ukrainian translations.
 #
 msgid ""
@@ -918,8 +918,8 @@ msgstr "URL"
 
 #. module: dm_geodata_connector
 #: model:ir.module.module,shortdesc:base.module_dm_geodata_connector
-msgid "Ukraine Address Reference Directory"
-msgstr "Адресний довідник України"
+msgid "Ukraine Address — Geodata.online Connector"
+msgstr "Адреси України — конектор Geodata.online"
 
 #. module: dm_geodata_connector
 #: code:addons/dm_geodata_connector/models/geodata_api_credential.py:0
