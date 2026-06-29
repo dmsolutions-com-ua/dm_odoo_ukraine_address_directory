@@ -6,8 +6,11 @@
     "category": "Extra Tools",
     "license": "LGPL-3",
     "version": "19.0.1.0.0",
+    # Обкладинка модуля в Apps Store (без цього ключа магазин показує лише іконку).
+    "images": ["static/description/cover.png"],
     # Auto-install bridge: підключається, коли встановлено й парасольку
     # (dm_geodata_online), і сам модуль `lunch`. Видалення будь-якого з них прибирає його.
+    # Окремий лістинг Apps Store: bundling сюди примусово ставив би модуль `lunch`.
     "depends": [
         "dm_geodata_online",
         "lunch",

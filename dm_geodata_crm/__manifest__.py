@@ -6,8 +6,11 @@
     "category": "Sales/CRM",
     "license": "LGPL-3",
     "version": "19.0.1.0.0",
+    # Обкладинка модуля в Apps Store (без цього ключа магазин показує лише іконку).
+    "images": ["static/description/cover.png"],
     # Auto-install bridge: підключається, коли встановлено і парасольку
     # (dm_geodata_online), і CRM; видалення dm_geodata_online прибирає його.
+    # Окремий лістинг Apps Store: bundling сюди примусово ставив би застосунок CRM.
     "depends": [
         "dm_geodata_online",
         "crm",

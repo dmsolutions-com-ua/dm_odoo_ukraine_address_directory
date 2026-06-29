@@ -24,25 +24,46 @@
 | Модуль | Призначення |
 |--------|-------------|
 | `dm_geodata_connector` | Ядро: модель адреси, власний API-клієнт, OWL-віджет автопідказки, геокодер, безпека, моніторинг |
-| `dm_geodata_online` | Парасольковий застосунок: встановлює набір |
-| `dm_geodata_contact` | Автопідказка на `res.partner` |
-| `dm_geodata_crm` | Автопідказка на `crm.lead` (auto-install bridge) |
-| `dm_geodata_company` | Автопідказка на `res.company` (auto-install bridge) |
-| `dm_geodata_hr` | Автопідказка на приватну адресу `hr.employee` (auto-install bridge) |
-| `dm_geodata_bank` | Автопідказка на `res.bank` (auto-install bridge) |
-| `dm_geodata_lunch` | Автопідказка на `lunch.supplier` (потребує `lunch`) |
+| `dm_geodata_online` | Парасольковий застосунок: одним пакетом ставить ядро + легкі bridge (контакти/компанії/банки) |
+| `dm_geodata_contact` | Автопідказка на `res.partner` (входить у парасольку) |
+| `dm_geodata_company` | Автопідказка на `res.company` (входить у парасольку) |
+| `dm_geodata_bank` | Автопідказка на `res.bank` (входить у парасольку) |
+| `dm_geodata_crm` | Автопідказка на `crm.lead` (окремий лістинг, потребує `crm`) |
+| `dm_geodata_hr` | Автопідказка на приватну адресу `hr.employee` (окремий лістинг, потребує `hr`) |
+| `dm_geodata_lunch` | Автопідказка на `lunch.supplier` (окремий лістинг, потребує `lunch`) |
 | `dm_test_geodata_connector` | Mock API + юніт-тести (лише для тестових БД) |
 
 > Усі bridge-модулі тонкі: перевикористовують спільний `dm.geodata.address.mixin`
 > (нова модель-власник = мапа `_geodata_fields` + в'юха, ~100–150 рядків).
+
+### Розповсюдження та зони покриття
+
+Завантаження модуля з Apps Store пакує його разом із forward-залежностями (`depends`).
+Тому набір поділено за принципом «що можна доставити одним zip, не примушуючи зайвих
+застосунків»:
+
+- **Парасолька `dm_geodata_online`** форвард-залежить від ядра й легких bridge
+  (`contact`/`company`/`bank` — це моделі з `base`, додаткових застосунків не тягнуть).
+  Один zip парасольки одразу вмикає підказки на **контактах, компаніях, банках**.
+- **`crm`/`hr`/`lunch`** залишені **окремими лістингами** Apps Store. Їх не можна
+  включити у `depends` парасольки, бо це **примусово встановило б застосунки CRM/HR/Lunch
+  усім** користувачам. Хто користується цими застосунками — встановлює відповідний
+  bridge окремо (він `auto_install` і підключається автоматично). Альтернатива —
+  підключити **весь репозиторій** у `addons_path`, тоді всі bridge активуються самі.
+
+> Видалення: легкі bridge тримаються ядра `dm_geodata_connector` і знімаються разом із
+> ним; `crm`/`hr`/`lunch` знімаються разом із парасолькою `dm_geodata_online`.
 
 ## Вимоги
 Odoo 19.0 Community, Python 3.10+, PostgreSQL, Python-пакет `requests`.
 
 ## Встановлення
 ```bash
-# увесь набір (через парасольковий застосунок):
+# ядро + підказки на контактах/компаніях/банках (через парасольковий застосунок):
 odoo-bin -d <db> -i dm_geodata_online
+
+# додатково для CRM / HR / Lunch — встановити відповідний bridge:
+odoo-bin -d <db> -i dm_geodata_crm   # або dm_geodata_hr / dm_geodata_lunch
 
 # тести:
 odoo-bin -d <db> -i dm_test_geodata_connector --test-enable --stop-after-init
