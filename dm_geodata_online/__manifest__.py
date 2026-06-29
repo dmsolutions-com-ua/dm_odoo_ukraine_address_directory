@@ -8,7 +8,7 @@
     "website": "https://geodata.online",
     "category": "Extra Tools",
     "license": "LGPL-3",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.1.1",
     # Обкладинка модуля в Apps Store (без цього ключа магазин показує іконку).
     "images": ["static/description/cover.png"],
     # Парасольковий застосунок. Один zip з Apps Store доставляє ядро й легкі bridge

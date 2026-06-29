@@ -1,11 +1,12 @@
 {
     "name": "Ukraine Address Integration - Contacts",
-    "summary": "Inline Geodata.online address autocomplete on contacts",
+    "summary": "Inline Geodata.online address autocomplete on contacts · "
+    "автозаповнення адрес України на контактах, адресний довідник України, res.partner",
     "author": "DM Solutions",
     "website": "https://geodata.online",
     "category": "Hidden",
     "license": "LGPL-3",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.1.1",
     # Обкладинка модуля в Apps Store (без цього ключа магазин показує лише іконку).
     "images": ["static/description/cover.png"],
     # Bundled-bridge: тримається ядра (dm_geodata_connector), щоб парасолька

@@ -1,11 +1,13 @@
 {
     "name": "Ukraine Address Integration - CRM",
-    "summary": "Geodata.online address autocomplete on CRM leads/opportunities",
+    "summary": "Geodata.online address autocomplete on CRM leads/opportunities · "
+    "автозаповнення адрес України у CRM, ліди й нагоди, адресний довідник України, "
+    "crm.lead",
     "author": "DM Solutions",
     "website": "https://geodata.online",
     "category": "Sales/CRM",
     "license": "LGPL-3",
-    "version": "19.0.1.0.0",
+    "version": "19.0.1.0.1",
     # Обкладинка модуля в Apps Store (без цього ключа магазин показує лише іконку).
     "images": ["static/description/cover.png"],
     # Auto-install bridge: підключається, коли встановлено і парасольку
