@@ -1,4 +1,4 @@
-# Ukraine Address Reference Directory (dm_geodata_connector)
+# Ukraine Address — Geodata.online Connector (dm_geodata_connector)
 
 Core module: self-contained integration with the **Geodata.online** API for
 Ukrainian address autocomplete, normalization and geocoding (Odoo 19 CE).
