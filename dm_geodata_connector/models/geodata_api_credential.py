@@ -1,3 +1,4 @@
+import ast
 import logging
 from datetime import timedelta
 
@@ -20,6 +21,19 @@ _EMPTY_RESULT_MESSAGES = frozenset(
     }
 )
 _MONIKER_EXPIRED = "Moniker expired"
+
+# Перевірка оновлень: звіряємо version у маніфесті ядра на гілці магазину 19.0
+# (саме з неї публікується Apps Store). Лише GET публічного файлу — про клієнта
+# нічого не передається, порівняння локальне.
+_UPDATE_MANIFEST_URL = (
+    "https://raw.githubusercontent.com/dmsolutions-com-ua/"
+    "dm_odoo_ukraine_address_directory/19.0/dm_geodata_connector/__manifest__.py"
+)
+_UPDATE_PARAM_ENABLED = "geodata.update_check_enabled"
+_UPDATE_PARAM_URL = "geodata.update_check_url"
+_UPDATE_PARAM_LATEST = "geodata.update_latest_version"
+_UPDATE_PARAM_DISMISSED = "geodata.update_dismissed_version"
+_UPDATE_PARAM_NOTIFIED = "geodata.update_notified_version"
 
 
 class GeodataApiCredential(models.Model):
@@ -171,6 +185,25 @@ class GeodataApiCredential(models.Model):
     last_balance = fields.Float(string="Last Known Balance", readonly=True, copy=False)
     health_alert_last = fields.Datetime(
         string="Last Health Alert", readonly=True, copy=False
+    )
+
+    # ------------------------------------------------------------------
+    # Перевірка оновлень модуля (глобальна; стан зберігається в ir.config_parameter,
+    # ці поля лише проксі/обчислення для UI — однакові на всіх креденшалах).
+    # ------------------------------------------------------------------
+    update_check_enabled = fields.Boolean(
+        string="Check for module updates",
+        compute="_compute_update_check_enabled",
+        inverse="_inverse_update_check_enabled",
+        help="Daily compare the installed connector version with the published "
+        "version on GitHub (branch 19.0) and notify managers when a newer one "
+        "exists. Only a GET of a public file — nothing about this system is sent.",
+    )
+    update_available = fields.Boolean(
+        string="Update available", compute="_compute_update_state",
+    )
+    latest_version = fields.Char(
+        string="Latest published version", compute="_compute_update_state",
     )
 
     # ------------------------------------------------------------------
@@ -543,7 +576,12 @@ class GeodataApiCredential(models.Model):
         (a) Probes every active credential (its alerts are company-scoped).
         (b) Per-company gap detection: a company for which no active credential
         resolves has silent autocomplete, so it is logged and pushed to that
-        company's managers."""
+        company's managers.
+        (c) Module-update check (credential-agnostic; never blocks the rest)."""
+        try:
+            self._check_connector_update()
+        except Exception:  # noqa: BLE001
+            _logger.debug("Geodata update check failed", exc_info=True)
         creds = self.sudo().search([("active", "=", True)])
         creds.filtered("health_check_enabled")._run_health_check()
         for company in self.env["res.company"].sudo().search([]):
@@ -569,6 +607,103 @@ class GeodataApiCredential(models.Model):
                 self._geodata_manager_partners(company), message, "warning")
         except Exception:  # noqa: BLE001
             _logger.debug("Failed to send Geodata no-credential notification", exc_info=True)
+
+    # ------------------------------------------------------------------
+    # Перевірка оновлень модуля (GitHub-варіант)
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _version_tuple(value):
+        out = []
+        for part in str(value or "").split("."):
+            out.append(int(part) if part.isdigit() else part)
+        return tuple(out)
+
+    @api.model
+    def _installed_connector_version(self):
+        module = self.env["ir.module.module"].sudo().search(
+            [("name", "=", "dm_geodata_connector")], limit=1
+        )
+        return module.installed_version or release.version
+
+    @api.model
+    def _fetch_latest_published_version(self):
+        """GET маніфесту ядра на гілці 19.0 і повернути version (або None).
+        Не-фатально й винесено окремо, щоб тести мокали без мережі."""
+        url = self.env["ir.config_parameter"].sudo().get_param(
+            _UPDATE_PARAM_URL) or _UPDATE_MANIFEST_URL
+        try:
+            response = requests.get(
+                url, timeout=10, headers={"User-Agent": self._user_agent()}
+            )
+            if response.status_code != 200:
+                return None
+            return ast.literal_eval(response.text).get("version")
+        except Exception:  # noqa: BLE001 - перевірка ніколи не має ламати cron
+            _logger.debug("Geodata: latest-version fetch failed", exc_info=True)
+            return None
+
+    @api.model
+    def _check_connector_update(self):
+        """Звірити встановлену версію ядра з опублікованою на GitHub і, якщо є
+        новіша, повідомити менеджерів (один раз на кожну нову версію)."""
+        params = self.env["ir.config_parameter"].sudo()
+        if params.get_param(_UPDATE_PARAM_ENABLED, "1") not in ("1", "True", "true"):
+            return False
+        latest = self._fetch_latest_published_version()
+        if not latest:
+            return False
+        params.set_param(_UPDATE_PARAM_LATEST, latest)
+        installed = self._installed_connector_version()
+        if self._version_tuple(latest) <= self._version_tuple(installed):
+            return False
+        if params.get_param(_UPDATE_PARAM_NOTIFIED) == latest:
+            return True  # про цю версію вже сповіщали
+        message = _(
+            "Geodata.online: a newer connector version is available "
+            "(%(latest)s; installed %(installed)s). See the Apps Store listing.",
+            latest=latest, installed=installed,
+        )
+        try:
+            self._geodata_push(self._geodata_manager_partners(), message, "info")
+            params.set_param(_UPDATE_PARAM_NOTIFIED, latest)
+        except Exception:  # noqa: BLE001
+            _logger.debug("Failed to send Geodata update notification", exc_info=True)
+        return True
+
+    @api.depends_context("uid")
+    def _compute_update_check_enabled(self):
+        enabled = self.env["ir.config_parameter"].sudo().get_param(
+            _UPDATE_PARAM_ENABLED, "1") in ("1", "True", "true")
+        for rec in self:
+            rec.update_check_enabled = enabled
+
+    def _inverse_update_check_enabled(self):
+        params = self.env["ir.config_parameter"].sudo()
+        for rec in self:
+            params.set_param(_UPDATE_PARAM_ENABLED, "1" if rec.update_check_enabled else "0")
+
+    @api.depends_context("uid")
+    def _compute_update_state(self):
+        params = self.env["ir.config_parameter"].sudo()
+        latest = params.get_param(_UPDATE_PARAM_LATEST) or ""
+        dismissed = params.get_param(_UPDATE_PARAM_DISMISSED) or ""
+        installed = self._installed_connector_version()
+        available = bool(
+            latest
+            and latest != dismissed
+            and self._version_tuple(latest) > self._version_tuple(installed)
+        )
+        for rec in self:
+            rec.latest_version = latest
+            rec.update_available = available
+
+    def action_dismiss_update(self):
+        """Сховати банер до появи ще новішої версії."""
+        latest = self.env["ir.config_parameter"].sudo().get_param(_UPDATE_PARAM_LATEST)
+        if latest:
+            self.env["ir.config_parameter"].sudo().set_param(
+                _UPDATE_PARAM_DISMISSED, latest)
+        return True
 
     # ------------------------------------------------------------------
     # Нормалізація запиту (AUDIT #17) та обгортки API

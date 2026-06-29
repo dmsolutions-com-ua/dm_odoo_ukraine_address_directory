@@ -241,6 +241,26 @@ checked**, so an admin reacts early instead of by accident.
   (OK / Warning / Error / Not checked), `last_balance`, `health_last_check`,
   `health_message`.
 
+## Update notifications
+The same daily cron also checks whether a **newer connector version** has been
+published, so admins on self-hosted / Odoo.sh know to upgrade.
+
+- **What it checks** (`_check_connector_update`): GETs the core `__manifest__.py`
+  from the GitHub branch the store publishes from
+  (`raw.githubusercontent.com/.../19.0/dm_geodata_connector/__manifest__.py`),
+  reads its `version` and compares it with the installed one.
+- **Privacy**: it is a plain GET of a public file — **nothing about this system is
+  sent** (only the client IP is visible to GitHub); the comparison is local. The
+  request carries the same branded `User-Agent`.
+- **Reaction**: when a newer version exists, managers get a one-off live
+  notification (re-fired only when an even newer version appears) and a dismissible
+  banner shows on the credential form. **Advisory only** — applying the update is
+  still a manual ops step (replace files + `-u`); the module just informs and links
+  to the Apps Store listing.
+- **Toggle**: `update_check_enabled` on the **Monitoring** page (on by default;
+  stored globally in `ir.config_parameter`). The source URL is overridable via
+  `geodata.update_check_url`.
+
 ## Multi-company
 Isolation follows company boundaries throughout:
 - **Credentials** — `get_credential(company)` prefers the active credential of the
