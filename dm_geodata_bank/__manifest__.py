@@ -1,6 +1,7 @@
 {
     "name": "Ukraine Address Integration - Banks",
-    "summary": "Geodata.online address autocomplete on the bank form",
+    "summary": "Geodata.online address autocomplete on the bank form · "
+    "автозаповнення адрес України на банках, адресний довідник України, res.bank",
     "author": "DM Solutions",
     "website": "https://geodata.online",
     "category": "Accounting",

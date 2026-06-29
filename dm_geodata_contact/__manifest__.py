@@ -1,6 +1,7 @@
 {
     "name": "Ukraine Address Integration - Contacts",
-    "summary": "Inline Geodata.online address autocomplete on contacts",
+    "summary": "Inline Geodata.online address autocomplete on contacts · "
+    "автозаповнення адрес України на контактах, адресний довідник України, res.partner",
     "author": "DM Solutions",
     "website": "https://geodata.online",
     "category": "Hidden",

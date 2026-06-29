@@ -1,6 +1,7 @@
 {
     "name": "Ukraine Address Integration - Companies",
-    "summary": "Geodata.online address autocomplete on the company form",
+    "summary": "Geodata.online address autocomplete on the company form · "
+    "автозаповнення адрес України на компаніях, адресний довідник України, res.company",
     "author": "DM Solutions",
     "website": "https://geodata.online",
     "category": "Extra Tools",
