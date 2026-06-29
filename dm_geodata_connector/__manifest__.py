@@ -8,7 +8,7 @@
     "website": "https://geodata.online",
     "category": "Hidden",
     "license": "LGPL-3",
-    "version": "19.0.1.1.1",
+    "version": "19.0.1.1.2",
     "depends": [
         "base",
         "base_geolocalize",
@@ -40,7 +40,8 @@
     "auto_install": False,
     "application": False,
     "post_init_hook": "post_init_hook",
+    # Обкладинка модуля в Apps Store (без цього ключа магазин показує лише іконку).
     "images": [
-        "static/description/icon.png",
+        "static/description/cover.png",
     ],
 }

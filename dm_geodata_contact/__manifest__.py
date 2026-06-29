@@ -5,11 +5,15 @@
     "website": "https://geodata.online",
     "category": "Hidden",
     "license": "LGPL-3",
-    "version": "19.0.1.0.0",
-    # Auto-install bridge: підключається, коли встановлено і парасольку
-    # (dm_geodata_online), і застосунок «Контакти»; видалення dm_geodata_online прибирає його.
+    "version": "19.0.1.1.0",
+    # Обкладинка модуля в Apps Store (без цього ключа магазин показує лише іконку).
+    "images": ["static/description/cover.png"],
+    # Bundled-bridge: тримається ядра (dm_geodata_connector), щоб парасолька
+    # dm_geodata_online могла включити його у свій depends без циклу й доставити одним
+    # zip з Apps Store. Auto-install лишається: підключається там, де є застосунок
+    # «Контакти». Знімається разом із ядром dm_geodata_connector.
     "depends": [
-        "dm_geodata_online",
+        "dm_geodata_connector",
         "contacts",
     ],
     "data": [
