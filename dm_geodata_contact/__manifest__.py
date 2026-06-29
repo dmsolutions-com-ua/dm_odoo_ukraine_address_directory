@@ -5,7 +5,7 @@
     "website": "https://geodata.online",
     "category": "Hidden",
     "license": "LGPL-3",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.1.1",
     # Обкладинка модуля в Apps Store (без цього ключа магазин показує лише іконку).
     "images": ["static/description/cover.png"],
     # Bundled-bridge: тримається ядра (dm_geodata_connector), щоб парасолька
