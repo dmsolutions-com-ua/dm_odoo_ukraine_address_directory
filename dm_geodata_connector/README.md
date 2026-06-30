@@ -260,6 +260,9 @@ published, so admins on self-hosted / Odoo.sh know to upgrade.
 - **Toggle**: `update_check_enabled` on the **Monitoring** page (on by default;
   stored globally in `ir.config_parameter`). The source URL is overridable via
   `geodata.update_check_url`.
+- **Release convention**: the **connector** version is the suite's release signal for
+  this notifier — bump `dm_geodata_connector` (and re-publish it) on any release users
+  should be told about, even when the functional change lives in another module.
 
 ## Multi-company
 Isolation follows company boundaries throughout:

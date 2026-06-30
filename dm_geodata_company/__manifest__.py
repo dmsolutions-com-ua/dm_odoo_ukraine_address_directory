@@ -4,9 +4,9 @@
     "автозаповнення адрес України на компаніях, адресний довідник України, res.company",
     "author": "DM Solutions",
     "website": "https://geodata.online",
-    "category": "Extra Tools",
+    "category": "Hidden",
     "license": "LGPL-3",
-    "version": "19.0.1.1.1",
+    "version": "19.0.1.1.2",
     # Обкладинка модуля в Apps Store (без цього ключа магазин показує лише іконку).
     "images": ["static/description/cover.png"],
     # Bundled-bridge: тримається ядра (dm_geodata_connector), щоб парасолька
