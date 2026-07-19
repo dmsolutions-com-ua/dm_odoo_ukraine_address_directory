@@ -141,6 +141,27 @@ export class GeodataAutocompleteField extends Component {
         return _t("Entered manually (not found in the directory)");
     }
 
+    // Окремий сигнал для БУДИНКУ: вулиця звірена з довідником, але номер будинку
+    // (що ділить те саме поле вулиці) введено вручну — тобто його немає в
+    // еталонному довіднику. Показується лише коли сама вулиця вже підтверджена
+    // (щоб не дублювати амбер-індикатор ручної вулиці isManual).
+    get houseManual() {
+        const data = this.props.record.data;
+        const houseField = this.options.house_verified_field;
+        const verifiedField = this.options.verified_field;
+        if (!houseField || !verifiedField) {
+            return false;
+        }
+        const hintOn = !this.options.hint_field || data[this.options.hint_field];
+        const strictUa = data.country_code === "UA";
+        const streetVerified = Boolean(data[verifiedField]);
+        return Boolean(strictUa && hintOn && this.value && streetVerified && !data[houseField]);
+    }
+
+    get houseHintTitle() {
+        return _t("House number entered manually (not found in the directory)");
+    }
+
     get countryOk() {
         const data = this.props.record.data;
         // Дозволяємо пошук, коли форма не несе придатного country_code тут;

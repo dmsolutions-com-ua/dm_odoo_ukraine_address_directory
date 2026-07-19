@@ -16,6 +16,7 @@
                 <field name="geodata_show_manual_hint" invisible="1"/>
                 <field name="geodata_city_verified" invisible="1"/>
                 <field name="geodata_street_verified" invisible="1"/>
+                <field name="geodata_house_verified" invisible="1"/>
                 <field name="geodata_zip_verified" invisible="1"/>
                 <field name="country_code" invisible="1"/>
             </xpath>
@@ -41,6 +42,7 @@
                     'source_method': 'geodata_autocomplete_streets',
                     'on_select_method': 'apply_address',
                     'verified_field': 'geodata_street_verified',
+                    'house_verified_field': 'geodata_house_verified',
                     'hint_field': 'geodata_show_manual_hint',
                     'min_chars': 3
                 }</attribute>

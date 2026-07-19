@@ -47,13 +47,14 @@ class GeodataApiCredential(models.Model):
         "Credential name must be unique.",
     )
 
-    # Дефолтний шаблон документної адреси: імена плейсхолдерів = імена полів API;
-    # значення сирі (без авто-склейок). Порожні поля не лишають «, ,» (рушій
-    # стискає роздільники).
+    # Дефолтний шаблон документної адреси. Плейсхолдери — СТАНДАРТНІ поля Odoo
+    # (чисті імена: {city}/{street}/{zip}/{state}/{area}/{hromada}/{country}) —
+    # тобто фактична адреса, яку ввів користувач (Підхід A). Довідникові поля —
+    # з префіксом `gd_`. Порожні поля не лишають «, ,» (рушій стискає роздільники).
+    # Тип нас.пункту й номер будинку вже входять у {city}/{street} (їх складають
+    # block_format_city/_street із довідникових даних на боці власника).
     _DEFAULT_ADDRESS_FORMAT = (
-        "{country}, {Index_}, {Region}, {Area}, {Hromada}, "
-        "{SettlementType} {City}, {StrType} {Street}, {HouseNum}{HouseNumAdd}, "
-        "{ApartmentType} {Apartment}"
+        "{country}, {zip}, {state}, {area}, {hromada}, {city}, {street}, {street2}"
     )
 
     name = fields.Char(required=True, default="Geodata.online")
@@ -80,57 +81,52 @@ class GeodataApiCredential(models.Model):
         string="Store English Transliteration",
         default=False,
     )
-    # Шаблони адрес (документи/конверти): імена плейсхолдерів = імена полів API,
-    # значення сирі 1:1 (без авто-склейок). {CityFull}/{StreetFull} — розумне
-    # відображення зі старими назвами.
+    # Шаблони адрес (документи/конверти/рядок картки): дефолти — на СТАНДАРТНИХ
+    # полях Odoo (чисті імена = фактична адреса власника). Довідникове збагачення
+    # доступне як `gd_*` (напр. {gd_kato}, {gd_city_district}, {gd_region_old}).
     address_format_document = fields.Char(
         string="Document address template", default=_DEFAULT_ADDRESS_FORMAT)
     address_format_letter = fields.Char(
         string="Envelope address template",
-        default=(
-            "{StrType} {Street}, {HouseNum}{HouseNumAdd}, "
-            "{ApartmentType} {Apartment}, {SettlementType} {City}, "
-            "{Area}, {Region}, {Index_}"
-        ))
+        default="{street}, {city}, {area}, {state}, {zip}")
     # Перший рядок (повна адреса) на вкладці «Інформація про адресу» картки контакту.
     address_format_display = fields.Char(
         string="Contact address line template",
         default=(
-            "{country}, {Index_}, {Region} ({RegionOld}), {Area} ({AreaOld}), "
-            "{HromadaFull}, {CityFull}, "
-            "({CityDistrict} район міста), {StreetFull}, {HouseNum}{HouseNumAdd}, "
-            "{ApartmentType}, {Apartment}, {street2}, {AdditionAddress}"
+            "{country}, {zip}, {state}, {area}, {hromada}, {city}, "
+            "{street}, {street2}"
         ))
     # Дві колонки «Деталі адреси» на вкладці картки контакту (HTML; порожні рядки
     # ховаються; значення екрануються).
     details_format_col1 = fields.Text(
         string="Address details: column 1",
         default='''<table style="border-collapse:collapse; width:100%;">
-<tr><td style="padding:6px 0; border-bottom:1px solid #E6E6E6;"><strong>КАТОТТГ:</strong></td><td style="padding:6px 0; border-bottom:1px solid #E6E6E6;">{KATO}</td></tr>
-<tr><td style="padding:6px 0; border-bottom:1px solid #E6E6E6;"><strong>КОАТУУ:</strong></td><td style="padding:6px 0; border-bottom:1px solid #E6E6E6;">{KOATUU}</td></tr>
-<tr><td style="padding:6px 0; border-bottom:1px solid #E6E6E6;"><strong>Інформація на дату:</strong></td><td style="padding:6px 0; border-bottom:1px solid #E6E6E6;">{updated}</td></tr>
+<tr><td style="padding:6px 0; border-bottom:1px solid #E6E6E6;"><strong>КАТОТТГ:</strong></td><td style="padding:6px 0; border-bottom:1px solid #E6E6E6;">{gd_kato}</td></tr>
+<tr><td style="padding:6px 0; border-bottom:1px solid #E6E6E6;"><strong>КОАТУУ:</strong></td><td style="padding:6px 0; border-bottom:1px solid #E6E6E6;">{gd_koatuu}</td></tr>
+<tr><td style="padding:6px 0; border-bottom:1px solid #E6E6E6;"><strong>Інформація на дату:</strong></td><td style="padding:6px 0; border-bottom:1px solid #E6E6E6;">{gd_updated}</td></tr>
 </table>''')
     details_format_col2 = fields.Text(
         string="Address details: column 2",
-        default='''<span style="display:inline-block;background:#009739;color:#fff;font-weight:bold;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;margin-right:4px;">М</span><span style="display:inline-block;background:#009739;color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;margin-right:4px;">{MetroStation}</span>
-<span style="display:inline-block;background:{MetroLineColor};color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;margin-right:4px;">{MetroLine}</span>
-<span style="display:inline-block;background:#555;color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;">{MetroDistance} м</span>
+        default='''<span style="display:inline-block;background:#009739;color:#fff;font-weight:bold;padding:2px 6px;border-radius:4px;font-size:12px;margin-left:6px;margin-right:4px;">М</span><span style="display:inline-block;background:#009739;color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;margin-right:4px;">{gd_metro_station}</span>
+<span style="display:inline-block;background:{gd_metro_line_color};color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;margin-right:4px;">{gd_metro_line}</span>
+<span style="display:inline-block;background:#555;color:#fff;padding:2px 6px;border-radius:4px;font-size:12px;">{gd_metro_distance} м</span>
 <table style="border-collapse:collapse; width:100%; font-family:Arial, sans-serif;">
-<tr><td style="padding:6px; width:50%;"><a href="https://www.google.com/maps?q={Lat_},{Long_}" target="_blank" style="display:block;text-align:center;background:#1a73e8;color:#fff;font-weight:bold;padding:6px 0;border-radius:4px;font-size:12px;text-decoration:none;">Google Maps</a></td><td style="padding:6px; width:50%;"><a href="https://www.openstreetmap.org/?mlat={Lat_}&mlon={Long_}#map=18/{Lat_}/{Long_}" target="_blank" style="display:block;text-align:center;background:#77B255;color:#fff;font-weight:bold;padding:6px 0;border-radius:4px;font-size:12px;text-decoration:none;">OpenStreetMap</a></td></tr>
-<tr><td style="padding:6px;"><span style="display:block;text-align:center;background:#F4B400;color:#000;font-weight:normal;padding:6px 0;border-radius:4px;font-size:12px;">{TerrStatus}</span></td></tr>
+<tr><td style="padding:6px; width:50%;"><a href="https://www.google.com/maps?q={gd_lat},{gd_long}" target="_blank" style="display:block;text-align:center;background:#1a73e8;color:#fff;font-weight:bold;padding:6px 0;border-radius:4px;font-size:12px;text-decoration:none;">Google Maps</a></td><td style="padding:6px; width:50%;"><a href="https://www.openstreetmap.org/?mlat={gd_lat}&mlon={gd_long}#map=18/{gd_lat}/{gd_long}" target="_blank" style="display:block;text-align:center;background:#77B255;color:#fff;font-weight:bold;padding:6px 0;border-radius:4px;font-size:12px;text-decoration:none;">OpenStreetMap</a></td></tr>
+<tr><td style="padding:6px;"><span style="display:block;text-align:center;background:#F4B400;color:#000;font-weight:normal;padding:6px 0;border-radius:4px;font-size:12px;">{gd_terr_status}</span></td></tr>
 </table>''')
-    # Шаблони заповнення стандартних полів адресного блоку Odoo з даних API.
+    # Шаблони заповнення стандартних полів адресного блоку Odoo з даних довідника
+    # (рендеряться на боці geo -> пишуться в поля власника). Плейсхолдери — `gd_*`.
     block_format_city = fields.Char(
-        string="City field template", default="{CityFull}")
+        string="City field template", default="{gd_city_full}")
     block_format_street = fields.Char(
         string="Street field template",
-        default="{StreetFull}, {HouseNum}{HouseNumAdd}")
+        default="{gd_street_full}, {gd_house_num}{gd_house_num_add}")
     block_format_street2 = fields.Char(
         string="Street 2 field template", default="")
     block_format_area = fields.Char(
-        string="District field template", default="{Area} ({AreaOld})")
+        string="District field template", default="{gd_area} ({gd_area_old})")
     block_format_hromada = fields.Char(
-        string="Hromada field template", default="{HromadaFull}")
+        string="Hromada field template", default="{gd_hromada_full}")
 
     # Налаштування клієнтського троттлінгу, які споживає OWL-віджет.
     debounce_ms = fields.Integer(string="Autocomplete debounce (ms)", default=250)

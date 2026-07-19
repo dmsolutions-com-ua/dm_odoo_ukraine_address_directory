@@ -7,7 +7,7 @@
     "website": "https://geodata.online",
     "category": "Sales/CRM",
     "license": "LGPL-3",
-    "version": "19.0.1.0.1",
+    "version": "19.0.1.1.0",
     # Обкладинка модуля в Apps Store (без цього ключа магазин показує лише іконку).
     "images": ["static/description/cover.png"],
     # Auto-install bridge: підключається, коли встановлено і парасольку

@@ -116,9 +116,21 @@ goes **right after the current type**, before the name (`селище (смт) �
   (`address_full_*`, `address_letter_*`) **always** show old names/types,
   regardless of `show_old_names`.
 
+**Placeholder naming (v19.0.2.0.0, Approach A).** Standard Odoo fields use
+**clean** names — `{city}`, `{street}`, `{zip}`, `{state}`, `{area}`,
+`{hromada}`, `{country}`, `{street2}` — and carry the **actual** address the user
+entered (from the directory *or* typed manually). Directory-only values use the
+**`gd_`** prefix — `{gd_kato}`, `{gd_metro_line}`, `{gd_city_full}`,
+`{gd_region_old}`, … The document / letter / display defaults are built from the
+**clean Odoo** placeholders, so they include manually-entered parts not yet in the
+directory. Legacy CamelCase placeholders (`{City}`, `{KATO}`, …) still resolve
+(directory values) as deprecated aliases; the `19.0.2.0.0` migration renames them
+to `gd_` in stored templates.
+
 **Template model (document/letter).** A template is an ordered list of
-placeholders; non-empty segments are joined with **commas**. Base placeholders
-`{region}/{area}/{hromada}/{city}/{street}` render the **current** value only. A
+placeholders; non-empty segments are joined with **commas**. Directory composites
+`{gd_region}/{gd_area}/{gd_hromada}/{gd_city}/{gd_street}` render the **current**
+value only. A
 base placeholder immediately followed by its `{*_old}` counterpart is **merged**
 into one `current (old)` segment — for `city`/`street` this also carries the old
 type (`село (смт) Іванівське`, `вул. Центральна (Леніна)`). A standalone

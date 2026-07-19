@@ -50,6 +50,9 @@ class GeodataAddressMixin(models.AbstractModel):
     # (підказок). Керує індикатором введених вручну даних (червона рамка).
     geodata_city_verified = fields.Boolean(compute="_compute_geodata_verified")
     geodata_street_verified = fields.Boolean(compute="_compute_geodata_verified")
+    # Будинок окремо від вулиці: правка лише номера лишає вулицю підтвердженою,
+    # тож для чесного попередження «будинок не з довідника» потрібен свій прапорець.
+    geodata_house_verified = fields.Boolean(compute="_compute_geodata_verified")
     geodata_zip_verified = fields.Boolean(compute="_compute_geodata_verified")
     geodata_verified_level = fields.Char(
         compute="_compute_geodata_verified", string="Verified up to")
@@ -171,26 +174,103 @@ class GeodataAddressMixin(models.AbstractModel):
     def _compute_geodata_documents(self):
         credential = self.env["dm.geodata.api.credential"].sudo().get_credential()
         store_en = credential.store_english if credential else False
+        Geo = self.env["dm.geodata.address"]
         for rec in self:
-            addr = rec.geodata_address_id.sudo()
-            extra = rec._geodata_owner_extra()
-            if addr and credential:
+            fmap = rec._geodata_fields
+            city_f, street_f = fmap.get("city"), fmap.get("street")
+            owner_city = rec[city_f] if city_f in rec._fields else False
+            owner_street = rec[street_f] if street_f in rec._fields else False
+            # Підхід A: документ будуємо з ФАКТИЧНОЇ адреси власника (owner-поля з
+            # відкатом на довідник для порожніх), коли є credential і АБО є
+            # пов'язана dm.geodata.address (верифікована UA-адреса; owner-поля ще
+            # можуть бути порожні), АБО UA-адреса власника з містом/вулицею
+            # (ручний ввід без пов'язаного запису).
+            render = credential and (
+                rec.geodata_address_id
+                or (rec._geodata_is_ua() and (owner_city or owner_street)))
+            if render:
                 doc = credential.address_format_document
                 letter = credential.address_format_letter
-                rec.geodata_address_full_ua = addr._render_api_template(doc, "ua", extra)
-                rec.geodata_address_letter_ua = addr._render_api_template(letter, "ua", extra)
-                rec.geodata_address_full_en = (
-                    addr._render_api_template(doc, "en", extra) if store_en else False)
-                rec.geodata_address_letter_en = (
-                    addr._render_api_template(letter, "en", extra) if store_en else False)
-                rec.geodata_address_display = addr._render_api_template(
-                    credential.address_format_display, "ua", extra)
+                vals_ua = rec._geodata_doc_values("ua")
+                rec.geodata_address_full_ua = Geo._render_values(doc, vals_ua)
+                rec.geodata_address_letter_ua = Geo._render_values(letter, vals_ua)
+                rec.geodata_address_display = Geo._render_values(
+                    credential.address_format_display, vals_ua)
+                if store_en:
+                    vals_en = rec._geodata_doc_values("en")
+                    rec.geodata_address_full_en = Geo._render_values(doc, vals_en)
+                    rec.geodata_address_letter_en = Geo._render_values(letter, vals_en)
+                else:
+                    rec.geodata_address_full_en = False
+                    rec.geodata_address_letter_en = False
             else:
                 rec.geodata_address_full_ua = False
                 rec.geodata_address_full_en = False
                 rec.geodata_address_letter_ua = False
                 rec.geodata_address_letter_en = False
                 rec.geodata_address_display = False
+
+    def _geodata_doc_values(self, lang="ua"):
+        """Значення для документної/листової адреси та рядка картки (Підхід A):
+        база — СТАНДАРТНІ поля Odoo (чисті імена = фактична адреса власника),
+        плюс `gd_`-збагачення з пов'язаної dm.geodata.address (коли зв'язок є) та
+        Odoo-поля власника (name/phone/…). EN: верифіковані рівні (`*_ref`)
+        беруться транслітеровані з довідника; ручні лишаються UA (Фаза 1)."""
+        self.ensure_one()
+        fmap = self._geodata_fields
+        en = lang == "en"
+        Geo = self.env["dm.geodata.address"]
+
+        def ov(key):
+            real = fmap.get(key, key)
+            return (self[real] if real in self._fields else False) or ""
+
+        geo = self.geodata_address_id.sudo() if self.geodata_address_id else False
+        # Директорні значення мовозалежні (gd_*_full/gd_area/… вже EN за lang="en").
+        dirv = geo._api_template_values(lang) if geo else {}
+        settlement_v = bool(geo and geo.settlement_ref)
+
+        def pick(owner_val, dir_val, verified):
+            """owner-first із відкатом на довідник; для EN верифікований рівень
+            (`*_ref`) береться транслітерований з довідника."""
+            if en and verified and dir_val:
+                return dir_val
+            return owner_val or dir_val
+
+        # Директорні композити (рядок вулиці = вулиця + будинок, як block_format_street).
+        dir_street = dirv.get("gd_street_full", "")
+        d_house = (dirv.get("gd_house_num") or "") + (dirv.get("gd_house_num_add") or "")
+        if dir_street and d_house:
+            dir_street = "%s, %s" % (dir_street, d_house)
+        elif d_house:
+            dir_street = d_house
+        dir_region = dirv.get("gd_region", "")
+
+        # Область: owner name; EN верифікований -> нормалізована EN-назва з довідника.
+        state_field = fmap.get("state_id")
+        state_rec = self[state_field] if (state_field and state_field in self._fields) else False
+        owner_state = state_rec.name if state_rec else ""
+        dir_state = Geo._normalize_region_name(dir_region) if dir_region else ""
+
+        # Вулиця: якщо будинок введено вручну (є номер, немає house_ref) — для EN
+        # лишаємо owner-рядок (не змішуємо мови), тож вважаємо неверифікованим.
+        street_v = bool(geo and geo.street_ref and not (geo.house_num and not geo.house_ref))
+
+        clean = {
+            "country": {"ua": "УКРАЇНА", "en": "Ukraine"}.get(lang, "Ukraine"),
+            "zip": ov("zip") or dirv.get("gd_index", ""),
+            "state": pick(owner_state, dir_state, settlement_v),
+            "area": pick(ov("area"), dirv.get("gd_area", ""), settlement_v),
+            "hromada": pick(ov("hromada"), dirv.get("gd_hromada_full", ""), settlement_v),
+            "city": pick(ov("city"), dirv.get("gd_city_full", ""), settlement_v),
+            "street": pick(ov("street"), dir_street, street_v),
+            "street2": ov("street2"),
+        }
+
+        result = dict(dirv)                          # gd_/CamelCase збагачення
+        result.update(self._geodata_owner_extra())   # name/phone/… + street2
+        result.update(clean)                         # чисті owner-ключі перемагають
+        return result
 
     # Бари URL у колонках робимо клікабельними. Lookbehind, щоб не чіпати URL
     # усередині href="…"/значень атрибутів; зупиняється на пробілі/`<`.
@@ -283,6 +363,7 @@ class GeodataAddressMixin(models.AbstractModel):
                             and not rec._is_house_only_change(geo, owner_street)):
                         street_v = False
             house_v = bool(addr and addr.house_ref)
+            rec.geodata_house_verified = house_v
             # Індекс: підтверджений, якщо власників zip збігається з довідниковим
             # post_index. Ручна правка (або відсутність у довіднику) -> не
             # підтверджено -> помітка «введено вручну».
