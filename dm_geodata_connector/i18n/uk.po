@@ -59,10 +59,9 @@ msgid "Additional"
 msgstr "Додатково"
 
 #. module: dm_geodata_connector
-#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__address_display
 #: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__address_string
-msgid "Full Address"
-msgstr "Повна адреса"
+msgid "Address String"
+msgstr "Адресний рядок"
 
 #. module: dm_geodata_connector
 #: model_terms:ir.ui.view,arch_db:dm_geodata_connector.geodata_address_view_form
@@ -293,7 +292,7 @@ msgstr "Не вдалося отримати токен доступу. Пере
 
 #. module: dm_geodata_connector
 #: code:addons/dm_geodata_connector/models/geodata_address_mixin.py:0
-#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__address_string
+#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__address_display
 msgid "Full Address"
 msgstr "Повна адреса"
 
