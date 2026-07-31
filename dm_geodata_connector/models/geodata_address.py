@@ -394,6 +394,38 @@ class GeodataAddress(models.Model):
         "HouseString": "house_string",
     }
 
+    # Публічний неймінг плейсхолдерів (див. рішення в плані A1): наші довідникові
+    # поля мають префікс `gd_`, стандартні поля Odoo — чисті імена (їх дає
+    # міксин у _geodata_doc_values). Кожен старий CamelCase-плейсхолдер отримує
+    # `gd_`-аліас — рушій приймає обидва, а міграція 19.0.2.0.0 переносить
+    # збережені шаблони на `gd_` (CamelCase лишається лише як legacy-аліас).
+    # Правило для адміна: чисте ім'я = поле Odoo; `gd_` = з довідника Geodata.
+    _GD_KEYS = {
+        "Index_": "gd_index",
+        "Region": "gd_region", "Area": "gd_area", "Hromada": "gd_hromada",
+        "City": "gd_city", "Suburb": "gd_suburb",
+        "SettlementType": "gd_settlement_type", "CityDistrict": "gd_city_district",
+        "Street": "gd_street", "StrType": "gd_str_type",
+        "HouseNum": "gd_house_num", "HouseNumAdd": "gd_house_num_add",
+        "KOATUU": "gd_koatuu", "KATO": "gd_kato", "PhoneCode": "gd_phone_code",
+        "TerrStatus": "gd_terr_status",
+        "IsOCentre": "gd_is_regional_center", "IsRCentre": "gd_is_district_center",
+        "RegionOld": "gd_region_old", "AreaOld": "gd_area_old",
+        "HromadaOld": "gd_hromada_old", "SuburbOld": "gd_suburb_old",
+        "CityOld": "gd_city_old", "SettlementTypeOld": "gd_settlement_type_old",
+        "StreetOld": "gd_street_old", "StrTypeOld": "gd_str_type_old",
+        "MetroStation": "gd_metro_station", "MetroLine": "gd_metro_line",
+        "MetroDistance": "gd_metro_distance",
+        "Lat_": "gd_lat", "Long_": "gd_long",
+        "Lat_S": "gd_lat_settlement", "Long_S": "gd_long_settlement",
+        "CityString": "gd_city_string", "StreetString": "gd_street_string",
+        "HouseString": "gd_house_string",
+        # Синтетичні (не з _API_TEMPLATE_FIELDS):
+        "CityFull": "gd_city_full", "StreetFull": "gd_street_full",
+        "HromadaFull": "gd_hromada_full", "MetroLineColor": "gd_metro_line_color",
+        "updated": "gd_updated",
+    }
+
     # Кольори ліній метро (офіційні кольори ліній) для бейджа лінії у колонці
     # «Деталі адреси». Ключі = точні рядки MetroLine з API. Невідома лінія ->
     # сірий (#555); порожня лінія (Дніпро/не-метро) -> бейдж без фону (невидимий).
@@ -455,25 +487,28 @@ class GeodataAddress(models.Model):
         values["country"] = {"ua": "УКРАЇНА", "en": "Ukraine"}.get(lang, "Ukraine")
         values["updated"] = (format_datetime(self.env, self.write_date)
                              if self.write_date else "")
+        # `gd_`-аліаси довідникових значень (додаємо ДО extra, щоб gd_ лишалися
+        # суто довідниковими, а owner-перекриття через extra їх не зачіпали).
+        for camel, gd in self._GD_KEYS.items():
+            if camel in values:
+                values[gd] = values[camel]
         if extra:
             values.update({k: self._template_str(v) for k, v in extra.items()})
         return values
 
-    def _render_api_template(self, template, lang="ua", extra=None,
-                             escape_values=False):
-        """Порядковий рендер: підстановка {APIKey}->сире значення зі збереженням
-        вільного тексту; порожні плейсхолдери прибираються разом із суміжними
-        роздільниками; рядок із плейсхолдерами, що став порожнім, пропускається
-        (вільний текст без плейсхолдерів зберігається). Один рушій для
+    @api.model
+    def _render_values(self, template, values, escape_values=False):
+        """Порядковий рендер за готовим словником значень (без потреби в записі
+        geo). Підстановка {key}->значення зі збереженням вільного тексту; порожні
+        плейсхолдери прибираються разом із суміжними роздільниками; рядок із
+        плейсхолдерами, що став порожнім, пропускається. Один рушій для
         однорядкових (кома-список без «дірок») і багаторядкових шаблонів.
 
         `escape_values=True` (для HTML-колонок) екранує підставлені значення, а
         літерал шаблону лишає як є — щоб адмінська розмітка рендерилась, а дані
-        API не могли інʼєктувати HTML."""
-        self.ensure_one()
+        не могли інʼєктувати HTML."""
         if not template:
             return ""
-        values = self._api_template_values(lang, extra)
         if escape_values:
             values = {k: (str(escape(v)) if v else v) for k, v in values.items()}
         out = []
@@ -483,6 +518,16 @@ class GeodataAddress(models.Model):
                 continue  # усі плейсхолдери рядка порожні -> ховаємо рядок
             out.append(self._render_template_line(line, values))
         return "\n".join(out).strip("\n")
+
+    def _render_api_template(self, template, lang="ua", extra=None,
+                             escape_values=False):
+        """Рендер шаблону зі значеннями цього geo-запису (обгортка над
+        _render_values). Використовується для block_format_* (to_address_values)
+        і details-колонок; документна/листова адреса рендериться з owner-бази
+        в міксині (_compute_geodata_documents)."""
+        self.ensure_one()
+        values = self._api_template_values(lang, extra)
+        return self._render_values(template, values, escape_values)
 
     def _subst_squeeze(self, text, values):
         """Підстановка {X}->значення зі стисканням порожніх полів: порожній

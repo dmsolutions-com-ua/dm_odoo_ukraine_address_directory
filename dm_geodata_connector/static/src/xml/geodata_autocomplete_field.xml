@@ -18,6 +18,9 @@
                    t-on-blur="onBlur"/>
             <span t-if="isManual" class="o_geodata_manual_icon fa fa-info-circle"
                   t-att-title="manualHintTitle"/>
+            <span t-if="houseManual and !isManual"
+                  class="o_geodata_manual_icon o_geodata_house_icon fa fa-info-circle"
+                  t-att-title="houseHintTitle"/>
             <ul t-if="state.open and state.suggestions.length"
                 t-ref="list"
                 t-att-id="listId"
