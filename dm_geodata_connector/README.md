@@ -209,9 +209,11 @@ a plain group (DOM order), so it needs no class.
 ## Hromada suffix
 The API returns the hromada **bare** (unlike region/area, which already carry
 `обл.`/`р-н`). At display time the connector appends the abbreviation —
-**`гр.`** (UA) / **`gr.`** (EN) — to the hromada in the partner address block
+**`гр.`** (UA) / **`hr.`** (EN) — to the hromada in the partner address block
 (`to_address_values`) and in the document/letter addresses (`_template_values`),
-e.g. `Берестинська гр.` / `Berestynska gr.`. The stored
+e.g. `Берестинська гр.` / `Berestynska hr.`. The EN form follows the CMU No. 55
+table (`г` → `h`), so it matches `transliterate("гр.")` — the owner-side document
+and the directory produce the same suffix. The stored
 `dm.geodata.address.hromada` stays bare (`_hromada_suffix` is display-only).
 
 Because the editable City/Street
