@@ -379,10 +379,15 @@ class GeodataAddress(models.Model):
     def _hromada_suffix(value, lang="ua"):
         """Append the 'громада' abbreviation to a hromada name. The API returns the
         hromada bare (unlike region/area, which already carry 'обл.'/'р-н'), so we
-        add it at display time: UA 'гр.', EN 'gr.'."""
+        add it at display time: UA 'гр.', EN 'hr.'.
+
+        The EN form follows the CMU No. 55 table (`г` -> `h`, `громада` ->
+        `hromada`), so it matches what `transliterate("гр.")` produces - the
+        owner-side document renders the suffix that way too.
+        """
         if not value:
             return value
-        return "%s %s" % (value, "gr." if lang == "en" else "гр.")
+        return "%s %s" % (value, "hr." if lang == "en" else "гр.")
 
     def _hromada_full_display(self, lang="ua"):
         """Громада з суфіксом «гр.» і старою назвою в дужках: «Сумська гр.

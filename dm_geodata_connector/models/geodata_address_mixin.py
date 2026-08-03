@@ -216,10 +216,9 @@ class GeodataAddressMixin(models.AbstractModel):
         Odoo, але `area`/`hromada` — колонки, що їх додає цей міксин, а `state`/
         `country` беруться з довідників через state_id/country_id), плюс
         `gd_`-збагачення з пов'язаної dm.geodata.address (коли зв'язок є) та
-        Odoo-поля власника (name/phone/…). EN: верифіковані рівні (`*_ref`)
-        беруться з довідника (вже транслітеровані), решта — ручний ввід власника,
-        який транслітерується тут же локально, щоб EN-адреса не змішувала
-        латиницю з кирилицею."""
+        Odoo-поля власника (name/phone/…). EN — транслітерація тих самих
+        owner-значень (див. `pick`), тож англійська адреса завжди описує рівно
+        те, що показано в українській, і не змішує латиницю з кирилицею."""
         self.ensure_one()
         fmap = self._geodata_fields
         en = lang == "en"
@@ -232,14 +231,17 @@ class GeodataAddressMixin(models.AbstractModel):
         geo = self.geodata_address_id.sudo() if self.geodata_address_id else False
         # Директорні значення мовозалежні (gd_*_full/gd_area/… вже EN за lang="en").
         dirv = geo._api_template_values(lang) if geo else {}
-        settlement_v = bool(geo and geo.settlement_ref)
 
-        def pick(owner_val, dir_val, verified):
-            """owner-first із відкатом на довідник; для EN верифікований рівень
-            (`*_ref`) береться транслітерований з довідника, а ручний ввід
-            транслітерується локально (для латиниці транслітерація — no-op)."""
-            if en and verified and dir_val:
-                return dir_val
+        def pick(owner_val, dir_val):
+            """owner-first із відкатом на довідник; для EN — транслітерація того,
+            що реально показано в UA.
+
+            Довідниковий запис оновлюється ЛИШЕ при збереженні, тож будь-яка
+            перевага його значення для EN означала б відставання від UA у формі:
+            користувач правив вулицю, UA мінялась, а EN лишалась старою до
+            «Зберегти». Відкат на довідникове (вже EN) значення безпечний —
+            транслітерація латиниці є no-op.
+            """
             value = owner_val or dir_val
             return transliterate(value) if en else value
 
@@ -252,15 +254,12 @@ class GeodataAddressMixin(models.AbstractModel):
             dir_street = d_house
         dir_region = dirv.get("gd_region", "")
 
-        # Область: owner name; EN верифікований -> нормалізована EN-назва з довідника.
+        # Область: назва зі state_id власника; відкат — нормалізована назва з
+        # довідника (без суфікса «обл.», як у res.country.state).
         state_field = fmap.get("state_id")
         state_rec = self[state_field] if (state_field and state_field in self._fields) else False
         owner_state = state_rec.name if state_rec else ""
         dir_state = Geo._normalize_region_name(dir_region) if dir_region else ""
-
-        # Вулиця: якщо будинок введено вручну (є номер, немає house_ref) — для EN
-        # лишаємо owner-рядок (не змішуємо мови), тож вважаємо неверифікованим.
-        street_v = bool(geo and geo.street_ref and not (geo.house_num and not geo.house_ref))
 
         # Країна — з country_id власника (як {state} зі state_id), із відкатом на
         # Україну, коли поле порожнє. Мапа fmap покриває нестандартні імена
@@ -271,11 +270,11 @@ class GeodataAddressMixin(models.AbstractModel):
         clean = {
             "country": Geo._country_name(lang, owner_country),
             "zip": ov("zip") or dirv.get("gd_index", ""),
-            "state": pick(owner_state, dir_state, settlement_v),
-            "area": pick(ov("area"), dirv.get("gd_area", ""), settlement_v),
-            "hromada": pick(ov("hromada"), dirv.get("gd_hromada_full", ""), settlement_v),
-            "city": pick(ov("city"), dirv.get("gd_city_full", ""), settlement_v),
-            "street": pick(ov("street"), dir_street, street_v),
+            "state": pick(owner_state, dir_state),
+            "area": pick(ov("area"), dirv.get("gd_area", "")),
+            "hromada": pick(ov("hromada"), dirv.get("gd_hromada_full", "")),
+            "city": pick(ov("city"), dirv.get("gd_city_full", "")),
+            "street": pick(ov("street"), dir_street),
             # street2 (кв./офіс) завжди ручний — для EN транслітеруємо.
             "street2": transliterate(ov("street2")) if en else ov("street2"),
         }
