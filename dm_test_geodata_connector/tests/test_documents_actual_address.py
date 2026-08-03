@@ -140,34 +140,41 @@ class TestDocumentsActualAddress(TransactionCase):
     # документні поля мусять залежати від нього.
     # ------------------------------------------------------------------
     def test_country_change_recomputes_documents(self):
-        """Direct write of `country_id` re-renders the document with the real
-        country name.
+        """`country_id` really is in `@api.depends` of `_compute_geodata_documents`.
 
-        Two things are pinned here:
-
-        1. `country_id` really is in `@api.depends` of
-           `_compute_geodata_documents` - otherwise the field would stay cached
-           and the country in the document would be stale.
-        2. The CURRENT, deliberate behaviour of a direct write: `country_id` is
-           not in `_GEO_ADDRESS_LEVELS`, so `_geodata_sync_on_manual_change` does
-           not run and the Ukrainian address survives under a foreign country.
-           In the form this does not happen - Odoo core nulls `state_id`, which
-           IS a level, so saving detaches and clears the address. Closing this
-           gap for the direct-write / import path means making the country a
-           first-class address level (separate change); when that lands, this
-           test is expected to change deliberately.
+        Isolated on a partner WITHOUT a directory link, so the country is the
+        only thing that changes: the cascade leaves a manually typed address
+        alone, yet `render` turns False once the address is no longer Ukrainian.
+        Without the dependency the field would stay cached and keep showing the
+        old rendering.
         """
-        partner, _addr = self._partner_from_directory()
-        before = partner.geodata_address_full_ua
+        partner = self.env["res.partner"].create({
+            "name": "Ручна адреса, зміна країни",
+            "country_id": self.ukraine.id,
+            "city": "Ніжин", "street": "вул. Миру, 3",
+        })
+        before = partner.geodata_address_full_ua or ""
         self.assertIn(self.ukraine.with_context(lang="uk_UA").name, before)
-        self.assertIn("Хрещатик", before)
+        self.assertIn("Ніжин", before)
 
-        poland = self.env.ref("base.pl")
-        partner.country_id = poland
-        after = partner.geodata_address_full_ua or ""
-        self.assertNotEqual(after, before, "поле не перерахувалось на зміну країни")
-        self.assertIn(poland.with_context(lang="uk_UA").name, after)
-        self.assertIn("Хрещатик", after, "адреса лишається — див. docstring")
+        partner.country_id = self.env.ref("base.pl")
+        # Ручний ввід не стирається (немає прив'язки), але адреса вже не
+        # українська -> документ не рендериться.
+        self.assertEqual(partner.city, "Ніжин")
+        self.assertFalse(partner.geodata_address_full_ua)
 
         partner.country_id = self.ukraine
         self.assertEqual(partner.geodata_address_full_ua, before)
+
+    def test_foreign_country_clears_linked_address(self):
+        """Країна — повноцінний рівень: іноземна країна знімає прив'язку й
+        чистить адресний блок навіть при прямому записі (імпорт/RPC), тож
+        документні поля порожніють разом із адресою."""
+        partner, _addr = self._partner_from_directory()
+        self.assertTrue(partner.geodata_address_full_ua)
+
+        partner.write({"country_id": self.env.ref("base.pl").id})
+        self.assertFalse(partner.geodata_address_id)
+        self.assertFalse(partner.city)
+        self.assertFalse(partner.geodata_address_full_ua)
+        self.assertFalse(partner.geodata_address_letter_ua)

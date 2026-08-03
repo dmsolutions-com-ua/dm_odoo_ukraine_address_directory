@@ -96,7 +96,12 @@ directory; detected via `settlement_ref`/`street_ref`/`house_ref`). Manually
 typed values that are not in the directory stay only on the partner's address
 block. Selecting a higher level clears the lower ones (clear-down); a manual
 edit downgrades the verified level (street) or detaches the link (settlement/
-oblast). Document/letter addresses reflect only the verified part (the
+oblast/country). The **country** is the topmost level: switching it to an
+explicitly foreign one detaches the link and clears the whole block, live in the
+form and on write (import/RPC) alike. An **empty** country is deliberately not a
+trigger (usually transient), and without a directory link nothing is touched, so
+a manually typed foreign address survives. Document/letter addresses reflect
+only the verified part (the
 `geodata_verified_level` is computed but not shown on the partner form).
 Manually-entered, non-empty address fields are marked with a single **amber
 info icon** with a tooltip — **only for Ukrainian addresses** (country = UA),
@@ -229,7 +234,9 @@ for a thin integration module:
    (e.g. `crm.lead`) need no map.
 2. **Onchange wrappers** (the mixin can't hardcode field names): declare
    `@api.onchange(<real field>)` methods calling `self._geodata_onchange(level)`
-   for the levels you want live clear-down (`state_id`/`area`/`city`/`street`).
+   for every level with live clear-down — `country_id`/`state_id`/`area`/`city`/
+   `street`. The `country_id` wrapper is required: without it a foreign country
+   keeps a Ukrainian address on screen until save.
 3. **View**: put `widget="geodata_autocomplete"` on the city/street fields (with
    the same `options` as the contact form), add the hidden control fields
    (`geodata_address_id`, monikers, `country_code`, verified flags…) and the

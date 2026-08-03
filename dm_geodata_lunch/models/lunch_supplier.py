@@ -23,6 +23,10 @@ class LunchSupplier(models.Model):
     # як у res.company / crm.lead.
     country_code = fields.Char(related="country_id.code")
 
+    @api.onchange("country_id")
+    def _onchange_geodata_country(self):
+        self._geodata_onchange("country_id")
+
     @api.onchange("state_id")
     def _onchange_geodata_state(self):
         self._geodata_onchange("state_id")

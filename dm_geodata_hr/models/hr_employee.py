@@ -25,6 +25,10 @@ class HrEmployee(models.Model):
 
     # Тонкі onchange-обгортки -> загальне тіло міксина (оголошені тут, бо імена
     # полів реальні на hr.employee; міксин не повинен їх жорстко зашивати).
+    @api.onchange("private_country_id")
+    def _onchange_geodata_country(self):
+        self._geodata_onchange("country_id")
+
     @api.onchange("private_state_id")
     def _onchange_geodata_state(self):
         self._geodata_onchange("state_id")
