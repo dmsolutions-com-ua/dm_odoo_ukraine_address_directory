@@ -311,6 +311,32 @@ class GeodataAddressMixin(models.AbstractModel):
         out = out.replace("\n", "<br/>")
         return Markup(out)
 
+    # Плейсхолдери, що описують КОНКРЕТНИЙ будинок / вулицю з довідника. Після
+    # ручної правки відповідного рівня вони описують уже іншу адресу, тож
+    # гасяться (посилання «Google Maps» вело б на стару будівлю). Задані ключами
+    # API; `gd_`-аліаси беруться з _GD_KEYS, тож legacy CamelCase покрито теж.
+    _STALE_HOUSE_KEYS = ("Lat_", "Long_", "HouseNum", "HouseNumAdd", "HouseString",
+                         "Index_", "CityDistrict", "MetroStation", "MetroLine",
+                         "MetroLineColor", "MetroDistance")
+    _STALE_STREET_KEYS = ("Street", "StrType", "StreetFull", "StreetOld",
+                          "StrTypeOld", "StreetString")
+
+    def _geodata_stale_values(self, diverged):
+        """Blank the directory placeholders whose level the owner's address has
+        diverged from (see `_geodata_diverged_levels`)."""
+        gd_map = self.env["dm.geodata.address"]._GD_KEYS
+        keys = []
+        if diverged["house"]:
+            keys += list(self._STALE_HOUSE_KEYS)
+        if diverged["street"]:
+            keys += list(self._STALE_STREET_KEYS)
+        blank = {}
+        for key in keys:
+            blank[key] = ""
+            if key in gd_map:
+                blank[gd_map[key]] = ""
+        return blank
+
     # Та сама причина свіжості, що й у _compute_geodata_documents: залежимо від
     # write_date пов'язаної адреси та адресних полів власника, інакше col1/col2 не
     # перераховуються при перевиборі з тим самим dm.geodata.address.
@@ -323,7 +349,11 @@ class GeodataAddressMixin(models.AbstractModel):
         credential = self.env["dm.geodata.api.credential"].sudo().get_credential()
         for rec in self:
             addr = rec.geodata_address_id.sudo()
-            extra = rec._geodata_owner_extra()
+            # Порядок критичний: owner-дані ПЕРЕКРИВАЮТЬ гасіння, бо
+            # _geodata_owner_extra кладе у {Index_} ВЛАСНИЙ zip власника — він
+            # має пережити гасіння довідникового {gd_index}.
+            extra = rec._geodata_stale_values(rec._geodata_diverged_levels())
+            extra.update(rec._geodata_owner_extra())
             if addr and credential:
                 rec.geodata_details_col1 = rec._geodata_html_finalize(
                     addr._render_api_template(
@@ -337,6 +367,70 @@ class GeodataAddressMixin(models.AbstractModel):
                 rec.geodata_details_col1 = False
                 rec.geodata_details_col2 = False
 
+    def _geodata_diverged_levels(self):
+        """Levels where the owner's address has DIVERGED from the linked
+        directory row, checked LIVE against the owner's fields.
+
+        The row is downgraded only by `_geodata_sync_on_manual_change` during
+        `write()`, so right after a manual edit it still claims the old street
+        and house. Everything that must react in-form (the "entered manually"
+        hints, the address details columns) asks here instead of reading
+        `*_ref`, which lags one save behind.
+
+        Divergence is NOT the same as "not verified": an address may legitimately
+        have no `house_ref` (never resolved to a building) while the row still
+        describes exactly what is on screen. Only a manual edit makes the row's
+        house/street data describe a DIFFERENT address.
+
+        The comparison mirrors `_geodata_sync_on_manual_change`, so the picture
+        before and after «Save» is the same. An empty owner street diverges from
+        nothing: while a suggestion is being applied the value is not
+        materialised in the owner field yet.
+
+        Returns {"street": bool, "house": bool}.
+        """
+        self.ensure_one()
+        diverged = {"street": False, "house": False}
+        addr = self.geodata_address_id
+        if not addr:
+            return diverged
+        street_field = self._geodata_fields["street"]
+        owner_street = self[street_field] if street_field in self._fields else False
+        if not owner_street:
+            return diverged
+        geo = addr.sudo()
+        # Валідована вулиця напряму (без to_address_values/get_credential).
+        # Тумблера «старі назви» більше немає -> порівнюємо без історичних назв.
+        street = geo._street_display("ua", False)
+        house = geo._house_part()
+        validated = ("%s, %s" % (street, house) if street and house
+                     else (street or house))
+        if not validated or self._norm(owner_street) == self._norm(validated):
+            return diverged
+        if self._is_house_only_change(geo, owner_street):
+            # Змінили лише номер/літеру: вулиця лишається підтвердженою.
+            diverged["house"] = True
+        else:
+            diverged["street"] = True
+            diverged["house"] = True
+        return diverged
+
+    def _geodata_live_levels(self):
+        """`*_ref` levels with the live divergence applied — «що ще підтверджено
+        просто зараз», без очікування збереження."""
+        self.ensure_one()
+        addr = self.geodata_address_id
+        levels = {
+            "city": bool(addr and addr.settlement_ref),
+            "street": bool(addr and addr.street_ref),
+            "house": bool(addr and addr.house_ref),
+        }
+        diverged = self._geodata_diverged_levels()
+        for level in ("street", "house"):
+            if diverged[level]:
+                levels[level] = False
+        return levels
+
     @api.depends(lambda self: [
         "geodata_address_id", "geodata_address_id.settlement_ref",
         "geodata_address_id.street_ref", "geodata_address_id.house_ref",
@@ -349,32 +443,11 @@ class GeodataAddressMixin(models.AbstractModel):
       + ([self._geodata_fields["zip"]]
          if self._geodata_fields.get("zip") in self._fields else []))
     def _compute_geodata_verified(self):
-        # Тумблера «старі назви» більше немає -> валідовану вулицю для порівняння
-        # ручних правок будуємо без історичних назв.
-        show_old = False
         for rec in self:
             addr = rec.geodata_address_id
-            city_v = bool(addr and addr.settlement_ref)
-            street_v = bool(addr and addr.street_ref)
-            # Жива перевірка вулиці: ручна зміна НАЗВИ вулиці (не лише номера
-            # будинку) знімає підтвердження ОДРАЗУ (без збереження картки) — тією
-            # самою логікою, що й _geodata_sync_on_manual_change на write, тож
-            # підсвічування «введено вручну» збігається до і після збереження.
-            # Порожнє поле -> лишаємо за street_ref (узгоджено з застосуванням
-            # підказки, де значення ще не матеріалізоване в полі власника).
-            if street_v:
-                owner_street = rec[rec._geodata_fields["street"]]
-                if owner_street:
-                    geo = addr.sudo()
-                    # Валідована вулиця напряму (без to_address_values/get_credential).
-                    street = geo._street_display("ua", show_old)
-                    house = geo._house_part()
-                    validated = ("%s, %s" % (street, house) if street and house
-                                 else (street or house))
-                    if (rec._norm(owner_street) != rec._norm(validated)
-                            and not rec._is_house_only_change(geo, owner_street)):
-                        street_v = False
-            house_v = bool(addr and addr.house_ref)
+            levels = rec._geodata_live_levels()
+            city_v, street_v = levels["city"], levels["street"]
+            house_v = levels["house"]
             rec.geodata_house_verified = house_v
             # Індекс: підтверджений, якщо власників zip збігається з довідниковим
             # post_index. Ручна правка (або відсутність у довіднику) -> не
