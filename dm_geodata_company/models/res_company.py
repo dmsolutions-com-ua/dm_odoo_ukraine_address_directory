@@ -20,6 +20,10 @@ class ResCompany(models.Model):
         self.ensure_one()
         return self.id
 
+    @api.onchange("country_id")
+    def _onchange_geodata_country(self):
+        self._geodata_onchange("country_id")
+
     @api.onchange("state_id")
     def _onchange_geodata_state(self):
         self._geodata_onchange("state_id")

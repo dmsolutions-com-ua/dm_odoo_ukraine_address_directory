@@ -450,6 +450,10 @@ class GeodataAddressMixin(models.AbstractModel):
     # Залежні рівні, що очищуються при ручній зміні даного рівня. area/hromada
     # походять від населеного пункту, тож зміна міста очищує і їх.
     _GEO_CLEAR_BELOW = {
+        # Країна — найвищий рівень: іноземна країна знецінює всю українську
+        # адресу, включно з областю.
+        "country_id": ("state_id", "area", "hromada", "city", "street",
+                       "street2", "zip"),
         "state_id": ("area", "hromada", "city", "street", "street2", "zip"),
         "area": ("hromada", "city", "street", "street2", "zip"),
         "hromada": ("city", "street", "street2", "zip"),
@@ -457,13 +461,30 @@ class GeodataAddressMixin(models.AbstractModel):
         "street": ("street2", "zip"),
     }
     # Рівень населеного пункту й вище: ручне розходження відв'язує зв'язок.
-    _GEO_DETACH_LEVELS = ("state_id", "area", "hromada", "city")
+    _GEO_DETACH_LEVELS = ("country_id", "state_id", "area", "hromada", "city")
     # Рівні, що порівнюються з валідованою адресою при збереженні (write).
-    _GEO_ADDRESS_LEVELS = ("state_id", "area", "hromada", "city", "street", "zip")
+    _GEO_ADDRESS_LEVELS = ("country_id", "state_id", "area", "hromada", "city",
+                           "street", "zip")
 
     def _geodata_is_ua(self):
         country = self[self._geodata_fields["country_id"]]
         return bool(country and country.code == "UA")
+
+    def _geodata_country_left_ua(self, country=None):
+        """True when the owner's country is set and is NOT Ukraine.
+
+        The only difference from `not _geodata_is_ua()` is the empty country:
+        it is deliberately NOT a trigger, because it is usually transient (the
+        field was cleared, an import carried no country) and `res.partner`
+        puts Ukraine back via `default_get` anyway. Only an explicit foreign
+        country invalidates a Ukrainian directory address.
+
+        `country` is passed explicitly by the write path, where the new value
+        arrives as an id in `vals` instead of sitting on the record.
+        """
+        if country is None:
+            country = self[self._geodata_fields["country_id"]]
+        return bool(country) and country.code != "UA"
 
     def _geodata_clear_block(self, level):
         for lvl in self._GEO_CLEAR_BELOW.get(level, ()):
@@ -488,6 +509,12 @@ class GeodataAddressMixin(models.AbstractModel):
         the linked address, drop the link so the address block clears in-form."""
         if not self.geodata_address_id or level not in self._GEO_DETACH_LEVELS:
             return
+        if level == "country_id":
+            # Порівняння з expected тут не годиться: порожня країна теж
+            # відрізняється від base.ua, але відв'язувати не має. Умову
+            # («країна стала іноземною») уже перевірив _geodata_onchange_applies.
+            self._geodata_detach()
+            return
         expected = self.geodata_address_id.sudo().to_address_values()
         field = self._geodata_fields[level]
         if level == "state_id":
@@ -497,15 +524,34 @@ class GeodataAddressMixin(models.AbstractModel):
         elif self._norm(self[field]) != self._norm(expected.get(level)):
             self._geodata_detach()
 
+    def _geodata_onchange_applies(self, level):
+        """Whether the manual-edit cascade should run for `level`.
+
+        For every level except the country the rule is "only touch Ukrainian
+        addresses". For the country itself the rule is the opposite - we act
+        BECAUSE the address has just stopped being Ukrainian - and it is
+        narrowed twice: an empty country is not a trigger (see
+        `_geodata_country_left_ua`), and without a directory link there is
+        nothing of ours to clear, so a manually typed foreign address is left
+        alone.
+        """
+        if level == "country_id":
+            return bool(self.geodata_address_id) and self._geodata_country_left_ua()
+        return self._geodata_is_ua()
+
     def _geodata_onchange(self, level):
         """Generic onchange body: live-detach (settlement+) and clear-down."""
-        if self.geodata_autocomplete_active or not self._geodata_is_ua():
+        if self.geodata_autocomplete_active:
             return
-        # Ручне редагування адресного блоку робить однорядковий «Пошук адреси»
-        # неактуальним — очищуємо його. Гард вище гарантує, що під час
-        # застосування підказки (geodata_autocomplete_active) значення не чіпаємо,
-        # тож прогресивний пошук місто->вулиця->будинок працює як раніше.
-        self.geodata_search = False
+        # Ручне редагування адресного блоку (і будь-яка зміна країни) робить
+        # однорядковий «Пошук адреси» неактуальним — очищуємо його. Гард вище
+        # гарантує, що під час застосування підказки (geodata_autocomplete_active)
+        # значення не чіпаємо, тож прогресивний пошук місто->вулиця->будинок
+        # працює як раніше.
+        if level == "country_id" or self._geodata_is_ua():
+            self.geodata_search = False
+        if not self._geodata_onchange_applies(level):
+            return
         if level in self._GEO_DETACH_LEVELS:
             self._geodata_live_sync(level)
         self._geodata_clear_block(level)
@@ -518,12 +564,29 @@ class GeodataAddressMixin(models.AbstractModel):
         geo = self.geodata_address_id.sudo()
         expected = geo.to_address_values()
         fmap = self._geodata_fields
+
+        # Країна — окремою гілкою ПЕРЕД рештою рівнів: у формі vals несе і
+        # country_id, і обнулений ядром state_id, тож без раннього return
+        # чистили б двічі. Ця гілка також єдина, що працює для імпорту/RPC, де
+        # state_id у vals не потрапляє.
+        country_field = fmap["country_id"]
+        if country_field in vals:
+            new_country = (self.env["res.country"].browse(vals[country_field])
+                           if vals[country_field] else self.env["res.country"])
+            if self._geodata_country_left_ua(new_country):
+                self._geodata_detach()
+                for lvl in self._GEO_CLEAR_BELOW["country_id"]:
+                    real = fmap[lvl]
+                    if real not in vals:
+                        vals[real] = False
+                return
+
         new = {}
         for level in self._GEO_ADDRESS_LEVELS:
             real = fmap[level]
             if real in vals:
                 new[level] = vals[real]
-            elif level == "state_id":
+            elif level in ("state_id", "country_id"):
                 new[level] = self[real].id if self[real] else False
             else:
                 new[level] = self[real]
@@ -594,7 +657,7 @@ class GeodataAddressMixin(models.AbstractModel):
     def _geodata_credential(self):
         return self.env["dm.geodata.api.credential"].sudo().get_credential()
 
-    def _geodata_country_ok(self, dep):
+    def _geodata_form_country_is_ua(self, dep):
         """Search only when the selected country is Ukraine (test #1).
 
         Robust across owner models: accept the `country_code` string when the
@@ -615,7 +678,7 @@ class GeodataAddressMixin(models.AbstractModel):
     # ------------------------------------------------------------------
     @api.model
     def geodata_autocomplete_cities(self, query, dep_values=None):
-        if not self._geodata_country_ok(dep_values):
+        if not self._geodata_form_country_is_ua(dep_values):
             return []
         credential = self._geodata_credential()
         if not credential:
@@ -637,7 +700,7 @@ class GeodataAddressMixin(models.AbstractModel):
         (``geodata_street_moniker`` present) and the query ends with a house
         token after the street name, query Houses; otherwise query Streets.
         """
-        if not self._geodata_country_ok(dep_values):
+        if not self._geodata_form_country_is_ua(dep_values):
             return []
         credential = self._geodata_credential()
         if not credential:
@@ -726,7 +789,7 @@ class GeodataAddressMixin(models.AbstractModel):
     @api.model
     def geodata_autocomplete_full_address(self, query, dep_values=None):
         """One-line full-address search via api/Address (test #9)."""
-        if not self._geodata_country_ok(dep_values):
+        if not self._geodata_form_country_is_ua(dep_values):
             return []
         credential = self._geodata_credential()
         if not credential:

@@ -24,8 +24,7 @@ class ResPartner(models.Model):
     # полів реальні на res.partner; міксин не повинен їх жорстко зашивати).
     @api.onchange("country_id")
     def _onchange_geodata_country(self):
-        # Зміна країни в адресному блоці теж робить «Пошук адреси» неактуальним.
-        self.geodata_search = False
+        self._geodata_onchange("country_id")
 
     @api.onchange("state_id")
     def _onchange_geodata_state(self):
