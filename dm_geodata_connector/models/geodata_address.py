@@ -873,6 +873,9 @@ class GeodataAddress(models.Model):
     _CLEAR_BELOW_STREET = (
         "house_num", "house_num_add", "house_num_add_ru",
         "house_string", "house_ref", "latitude", "longitude",
+        # Індекс прив'язаний до будинку: нова вулиця не має лишати індекс
+        # попереднього будинку (відповідь Streets його не несе).
+        "post_index",
         "city_district", "city_district_ru",
         "metro_station", "metro_line", "metro_distance",
     )
@@ -897,7 +900,15 @@ class GeodataAddress(models.Model):
         "settlement_type_old", "settlement_type_old_ru",
     )
     _STREET_RESET = ("street_old", "street_old_ru", "str_type_old", "str_type_old_ru")
+    # Рівень будинку: відповідь Houses несе HouseNum/HouseNumAdd/HouseString/
+    # Index_/Lat/Long/CityDistrict/Metro*, тож ВСІ вони мають скидатись, коли
+    # payload їх не несе. Інакше новий будинок без координат лишав би координати
+    # (і кнопки карт) попереднього — і так само зі старим індексом.
+    # `house_ref`/`street_ref` тут навмисно немає: повна адреса (api/Address)
+    # може не нести HouseId, і скидання позначило б її як «введено вручну».
     _HOUSE_RESET = ("house_num_add", "house_num_add_ru",
+                    "house_string", "post_index",
+                    "latitude", "longitude",
                     "city_district", "city_district_ru",
                     "metro_station", "metro_line", "metro_distance")
 
@@ -929,8 +940,11 @@ class GeodataAddress(models.Model):
         # попередньої адреси лишається на перевикористаному записі). Працює і для
         # повної адреси (несе City+Street+House одразу), де clear-below не діяв.
         def _reset(fields):
+            # setdefault: payload має пріоритет — якщо ключ у відповіді був,
+            # _api_data_to_vals його вже поклав і скидання не спрацює.
             for fname in fields:
-                vals.setdefault(fname, False)
+                vals.setdefault(
+                    fname, 0.0 if fname in ("latitude", "longitude") else False)
         if get("City"):
             _reset(self._SETTLEMENT_RESET)
         if get("Street"):
