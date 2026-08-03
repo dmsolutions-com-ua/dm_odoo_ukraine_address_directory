@@ -845,11 +845,6 @@ msgid "Status"
 msgstr "Стан"
 
 #. module: dm_geodata_connector
-#: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_api_credential__store_english
-msgid "Store English Transliteration"
-msgstr "Зберігати англійську транслітерацію"
-
-#. module: dm_geodata_connector
 #: model:ir.model.fields,field_description:dm_geodata_connector.field_dm_geodata_address__street_ref
 msgid "Street ID"
 msgstr "ID вулиці"

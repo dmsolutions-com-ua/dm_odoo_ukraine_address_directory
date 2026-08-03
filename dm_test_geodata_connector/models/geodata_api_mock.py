@@ -33,15 +33,6 @@ _MOCK_FULL = {
     "Index_": "01001", "Region": "Київ", "KOATUU": "8000000000",
     "Lat_": "50.4501", "Long_": "30.5234",
 }
-# Транслітерований (lang=en_US) варіант _MOCK_FULL — API повертає EN-значення в
-# тих самих ключах; літерний суфікс будинку повертається малими ("b").
-_MOCK_FULL_EN = {
-    "Id": 999001, "AddressString": "misto Kyiv, vul. Khreshchatyk, 1b",
-    "City": "Kyiv", "SettlementType": "misto",
-    "Street": "Khreshchatyk", "StrType": "vul.", "HouseNum": "1", "HouseNumAdd": "b",
-    "CityDistrict": "Shevchenkivskyi",
-    "Index_": "01001", "Region": "Kyiv", "KOATUU": "8000000000",
-}
 _MOCK_USER_INFO = {"Email": "mock@test.com", "Balans": 100.0}
 
 
@@ -70,10 +61,9 @@ class GeodataApiCredentialMock(models.Model):
         if endpoint == "api/Houses":
             return [dict(_MOCK_HOUSE)] if query and query[0].isdigit() else []
         if endpoint in ("api/FullAddress", "api/Address"):
-            if not query:
-                return []
-            lang = (params.get("sLang") or "").lower()
-            return dict(_MOCK_FULL_EN) if lang.startswith("en") else dict(_MOCK_FULL)
+            # Мова не розгалужує відповідь: EN — локальна транслітерація (КМУ №55),
+            # API запитується лише українською.
+            return dict(_MOCK_FULL) if query else []
         return []
 
     def _refresh_token(self):

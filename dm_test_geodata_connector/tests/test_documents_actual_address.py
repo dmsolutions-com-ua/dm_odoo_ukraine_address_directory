@@ -134,3 +134,40 @@ class TestDocumentsActualAddress(TransactionCase):
             "city": "Ніжин", "street": "", "zip": "16600",
         })
         self.assertEqual(out_empty, "Ніжин, 16600")
+
+    # ------------------------------------------------------------------
+    # Країна у шаблонах: значення {country} йде з country_id власника, тож
+    # документні поля мусять залежати від нього.
+    # ------------------------------------------------------------------
+    def test_country_change_recomputes_documents(self):
+        """Direct write of `country_id` re-renders the document with the real
+        country name.
+
+        Two things are pinned here:
+
+        1. `country_id` really is in `@api.depends` of
+           `_compute_geodata_documents` - otherwise the field would stay cached
+           and the country in the document would be stale.
+        2. The CURRENT, deliberate behaviour of a direct write: `country_id` is
+           not in `_GEO_ADDRESS_LEVELS`, so `_geodata_sync_on_manual_change` does
+           not run and the Ukrainian address survives under a foreign country.
+           In the form this does not happen - Odoo core nulls `state_id`, which
+           IS a level, so saving detaches and clears the address. Closing this
+           gap for the direct-write / import path means making the country a
+           first-class address level (separate change); when that lands, this
+           test is expected to change deliberately.
+        """
+        partner, _addr = self._partner_from_directory()
+        before = partner.geodata_address_full_ua
+        self.assertIn(self.ukraine.with_context(lang="uk_UA").name, before)
+        self.assertIn("Хрещатик", before)
+
+        poland = self.env.ref("base.pl")
+        partner.country_id = poland
+        after = partner.geodata_address_full_ua or ""
+        self.assertNotEqual(after, before, "поле не перерахувалось на зміну країни")
+        self.assertIn(poland.with_context(lang="uk_UA").name, after)
+        self.assertIn("Хрещатик", after, "адреса лишається — див. docstring")
+
+        partner.country_id = self.ukraine
+        self.assertEqual(partner.geodata_address_full_ua, before)

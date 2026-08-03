@@ -2,7 +2,7 @@
 
 [![Odoo](https://img.shields.io/badge/Odoo-19.0-714B67)](https://www.odoo.com)
 [![License: LGPL-3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-82%20passing-brightgreen)](dm_test_geodata_connector)
+[![Tests](https://img.shields.io/badge/tests-119%20passing-brightgreen)](dm_test_geodata_connector)
 
 Самодостатня інтеграція з API **[Geodata.online](https://geodata.online)** для
 автозаповнення, нормалізації та геокодування українських адрес безпосередньо на
@@ -10,6 +10,9 @@
 
 > Без майстрів (wizard) — лише вбудована автопідказка в полях «Місто» / «Вулиця».
 > Двомовність адрес: українська + англійська транслітерація (без російської).
+> Транслітерація виконується локально за [Постановою КМУ №55 від
+> 27.01.2010](https://zakon.rada.gov.ua/laws/show/55-2010-%D0%BF) — завжди,
+> без окремого налаштування й без додаткових запитів до API.
 
 ## Можливості
 - Вбудована автопідказка міст / вулиць / будинків із джерела Geodata.online.

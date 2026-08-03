@@ -6,6 +6,8 @@ from markupsafe import escape
 from odoo import _, api, fields, models
 from odoo.tools import format_datetime
 
+from .geodata_translit import transliterate
+
 _logger = logging.getLogger(__name__)
 
 
@@ -20,21 +22,21 @@ class GeodataAddress(models.Model):
     # мають кожна свій рядок — однакові значення geodata_id очікувані й дозволені.
 
     # Ключ API -> поле моделі (використовується upsert-ом, щоб знати, які поля
-    # реально несе відповідь). Зберігаються лише UA + EN (рішення AUDIT).
+    # реально несе відповідь). Лише UA: EN — локальна транслітерація (compute).
     _FIELD_API_KEYS = {
         "geodata_id": ("ID",),
         "settlement_ref": ("SettlementId", "Id"),
         "street_ref": ("StreetId",),
         "house_ref": ("HouseId",),
         "post_index": ("Index_", "Index_8x"),
-        "region": ("Region",), "region_en": ("RegionEn",),
-        "area": ("Area",), "area_en": ("AreaEn",),
-        "hromada": ("Hromada",), "hromada_en": ("HromadaEn",),
-        "city": ("City",), "city_en": ("CityEn",),
-        "settlement_type": ("SettlementType",), "settlement_type_en": ("SettlementTypeEn",),
+        "region": ("Region",),
+        "area": ("Area",),
+        "hromada": ("Hromada",),
+        "city": ("City",),
+        "settlement_type": ("SettlementType",),
         "city_district": ("CityDistrict",),
-        "street": ("Street",), "street_en": ("StreetEn",),
-        "str_type": ("StrType", "StreetType"), "str_type_en": ("StrTypeEn", "StreetTypeEn"),
+        "street": ("Street",),
+        "str_type": ("StrType", "StreetType"),
         "house_num": ("HouseNum",), "house_num_add": ("HouseNumAdd",),
         "post_index_": ("Index_",),
         "koatuu": ("KOATUU",), "kato": ("KATO",), "phone_code": ("PhoneCode",),
@@ -81,7 +83,8 @@ class GeodataAddress(models.Model):
     source_query = fields.Char(string="Source Address")
     address_level = fields.Char()
     city_string = fields.Char()
-    city_string_en = fields.Char()
+    city_string_en = fields.Char(
+        compute="_compute_translit", store=True, readonly=True)
     city_string_ru = fields.Char()
     street_string = fields.Char()
     house_string = fields.Char()
@@ -100,16 +103,26 @@ class GeodataAddress(models.Model):
     house_num = fields.Char(string="House Number")
     house_num_add = fields.Char(string="House Number Addition")
 
-    # Англійська транслітерація
-    region_en = fields.Char(string="Region (EN)")
-    area_en = fields.Char(string="District/Raion (EN)")
-    hromada_en = fields.Char(string="Territorial Community (EN)")
-    city_en = fields.Char(string="Settlement (EN)")
-    settlement_type_en = fields.Char(string="Settlement Type (EN)")
-    city_district_en = fields.Char(string="Settlement District (EN)")
-    street_en = fields.Char(string="Street Name (EN)")
-    str_type_en = fields.Char(string="Street Type (EN)")
-    house_num_add_en = fields.Char(string="House Number Addition (EN)")
+    # Англійська транслітерація — локальна (Постанова КМУ №55 від 27.01.2010),
+    # без звернень до API: детермінована похідна від UA-поля, тож compute+store.
+    region_en = fields.Char(
+        string="Region (EN)", compute="_compute_translit", store=True, readonly=True)
+    area_en = fields.Char(
+        string="District/Raion (EN)", compute="_compute_translit", store=True, readonly=True)
+    hromada_en = fields.Char(
+        string="Territorial Community (EN)", compute="_compute_translit", store=True, readonly=True)
+    city_en = fields.Char(
+        string="Settlement (EN)", compute="_compute_translit", store=True, readonly=True)
+    settlement_type_en = fields.Char(
+        string="Settlement Type (EN)", compute="_compute_translit", store=True, readonly=True)
+    city_district_en = fields.Char(
+        string="Settlement District (EN)", compute="_compute_translit", store=True, readonly=True)
+    street_en = fields.Char(
+        string="Street Name (EN)", compute="_compute_translit", store=True, readonly=True)
+    str_type_en = fields.Char(
+        string="Street Type (EN)", compute="_compute_translit", store=True, readonly=True)
+    house_num_add_en = fields.Char(
+        string="House Number Addition (EN)", compute="_compute_translit", store=True, readonly=True)
 
     # Російський переклад (зберігається як отримано; поки не показується/не запитується)
     region_ru = fields.Char()
@@ -122,28 +135,35 @@ class GeodataAddress(models.Model):
     str_type_ru = fields.Char()
     house_num_add_ru = fields.Char()
 
-    # Старі назви (UA + EN + RU)
+    # Старі назви (UA + EN + RU); EN так само транслітерується локально.
     region_old = fields.Char(string="Old Region")
-    region_old_en = fields.Char(string="Old Region (EN)")
+    region_old_en = fields.Char(
+        string="Old Region (EN)", compute="_compute_translit", store=True, readonly=True)
     region_old_ru = fields.Char()
     area_old = fields.Char(string="Old District")
-    area_old_en = fields.Char(string="Old District (EN)")
+    area_old_en = fields.Char(
+        string="Old District (EN)", compute="_compute_translit", store=True, readonly=True)
     area_old_ru = fields.Char()
     hromada_old = fields.Char(string="Old Hromada")
-    hromada_old_en = fields.Char(string="Old Hromada (EN)")
+    hromada_old_en = fields.Char(
+        string="Old Hromada (EN)", compute="_compute_translit", store=True, readonly=True)
     hromada_old_ru = fields.Char()
     suburb_old = fields.Char(string="Old Suburb")
     city_old = fields.Char(string="Old Settlement Name")
-    city_old_en = fields.Char(string="Old Settlement Name (EN)")
+    city_old_en = fields.Char(
+        string="Old Settlement Name (EN)", compute="_compute_translit", store=True, readonly=True)
     city_old_ru = fields.Char()
     settlement_type_old = fields.Char(string="Old Settlement Type")
-    settlement_type_old_en = fields.Char(string="Old Settlement Type (EN)")
+    settlement_type_old_en = fields.Char(
+        string="Old Settlement Type (EN)", compute="_compute_translit", store=True, readonly=True)
     settlement_type_old_ru = fields.Char()
     street_old = fields.Char(string="Old Street Name")
-    street_old_en = fields.Char(string="Old Street Name (EN)")
+    street_old_en = fields.Char(
+        string="Old Street Name (EN)", compute="_compute_translit", store=True, readonly=True)
     street_old_ru = fields.Char()
     str_type_old = fields.Char(string="Old Street Type")
-    str_type_old_en = fields.Char(string="Old Street Type (EN)")
+    str_type_old_en = fields.Char(
+        string="Old Street Type (EN)", compute="_compute_translit", store=True, readonly=True)
     str_type_old_ru = fields.Char()
 
     # Метро
@@ -167,9 +187,10 @@ class GeodataAddress(models.Model):
     comments = fields.Text(string="Comments")
     description = fields.Text(string="Description")
 
-    # Сирі відповіді API, збережені дослівно по мові ("ua"/"en"), злиті по ланцюгу
+    # Сирі відповіді API, збережені дослівно у кошику "ua", злиті по ланцюгу
     # місто->вулиця->будинок. Гарантує, що ЖОДНЕ поле з відповіді API не втрачається,
-    # навіть нові/недокументовані, що ще не мають окремої колонки.
+    # навіть нові/недокументовані, що ще не мають окремої колонки. (Кошик по мові:
+    # EN не запитується — це локальна транслітерація.)
     api_payload = fields.Json(string="Raw API payload", copy=False)
 
     # Формати для документів / листів (UA + EN)
@@ -210,6 +231,40 @@ class GeodataAddress(models.Model):
             rec.address_ua_postal = rec._format_postal("ua")
             rec.address_ua_short = rec._format_short("ua")
 
+    # UA-поле -> його EN-транслітерація. Єдине джерело істини і для compute, і для
+    # міграції (примусовий перерахунок наявних записів).
+    _TRANSLIT_FIELDS = (
+        ("region", "region_en"),
+        ("area", "area_en"),
+        ("hromada", "hromada_en"),
+        ("city", "city_en"),
+        ("settlement_type", "settlement_type_en"),
+        ("city_district", "city_district_en"),
+        ("street", "street_en"),
+        ("str_type", "str_type_en"),
+        ("house_num_add", "house_num_add_en"),
+        ("city_string", "city_string_en"),
+        ("region_old", "region_old_en"),
+        ("area_old", "area_old_en"),
+        ("hromada_old", "hromada_old_en"),
+        ("settlement_type_old", "settlement_type_old_en"),
+        ("city_old", "city_old_en"),
+        ("street_old", "street_old_en"),
+        ("str_type_old", "str_type_old_en"),
+    )
+
+    @api.depends(*[pair[0] for pair in _TRANSLIT_FIELDS])
+    def _compute_translit(self):
+        """Transliterate every UA column into its `_en` twin (CMU No. 55).
+
+        Local and unconditional: EN can never go stale or show a segment of a
+        previously selected address, because it is a pure function of the UA
+        value - clearing the UA column clears its EN twin in the same write.
+        """
+        for rec in self:
+            for ua_field, en_field in self._TRANSLIT_FIELDS:
+                rec[en_field] = transliterate(rec[ua_field]) or False
+
     @api.depends("post_index", "region", "area", "hromada", "settlement_type",
                  "city", "str_type", "street", "house_num", "house_num_add",
                  "region_en", "area_en", "hromada_en", "settlement_type_en",
@@ -225,27 +280,33 @@ class GeodataAddress(models.Model):
                  "metro_station", "metro_line", "metro_distance", "write_date")
     def _compute_full_addresses(self):
         credential = self.env["dm.geodata.api.credential"].sudo().get_credential()
-        store_en = credential.store_english if credential else False
         for rec in self:
             rec.address_display = rec._format_display("ua", credential)
             rec.address_full_ua = rec._format_full_address("ua", credential)
             rec.address_letter_ua = rec._format_letter_address("ua", credential)
-            if store_en:
-                rec.address_full_en = rec._format_full_address("en", credential)
-                rec.address_letter_en = rec._format_letter_address("en", credential)
-            else:
-                rec.address_full_en = False
-                rec.address_letter_en = False
+            # EN рахується завжди — транслітерація локальна й безкоштовна.
+            rec.address_full_en = rec._format_full_address("en", credential)
+            rec.address_letter_en = rec._format_letter_address("en", credential)
 
     # ------------------------------------------------------------------
     # Допоміжні форматувальники
     # ------------------------------------------------------------------
     def _field_lang(self, field_name, lang):
+        """Value of a field for the requested language.
+
+        For EN it is the `_en` twin (a stored transliteration of the UA column).
+        Fields with no `_en` twin (Suburb, MetroStation, HouseString, …) are
+        transliterated on the fly, so Cyrillic never leaks into an EN address.
+        Non-text values (coordinates, flags) are returned as they are —
+        `_template_str` formats them.
+        """
         self.ensure_one()
-        if lang == "en":
-            value = self[field_name + "_en"] if (field_name + "_en") in self._fields else False
-            return value or self[field_name] or ""
-        return self[field_name] or ""
+        if lang != "en":
+            return self[field_name] or ""
+        if (field_name + "_en") in self._fields:
+            return self[field_name + "_en"] or ""
+        value = self[field_name]
+        return transliterate(value) if isinstance(value, str) else (value or "")
 
     def _city_part(self, lang):
         city = self._field_lang("city", lang)
@@ -398,11 +459,21 @@ class GeodataAddress(models.Model):
     }
 
     # Публічний неймінг плейсхолдерів (див. рішення в плані A1): наші довідникові
-    # поля мають префікс `gd_`, стандартні поля Odoo — чисті імена (їх дає
-    # міксин у _geodata_doc_values). Кожен старий CamelCase-плейсхолдер отримує
-    # `gd_`-аліас — рушій приймає обидва, а міграція 19.0.2.0.0 переносить
-    # збережені шаблони на `gd_` (CamelCase лишається лише як legacy-аліас).
-    # Правило для адміна: чисте ім'я = поле Odoo; `gd_` = з довідника Geodata.
+    # поля мають префікс `gd_`, поля власника — чисті імена. Кожен старий
+    # CamelCase-плейсхолдер отримує `gd_`-аліас — рушій приймає обидва, а
+    # міграція 19.0.2.0.0 переносить збережені шаблони на `gd_` (CamelCase
+    # лишається лише як legacy-аліас).
+    # Правило для адміна: чисте ім'я = ФАКТИЧНА адреса власника; `gd_` = те, що
+    # каже довідник Geodata. Різниця саме в ДЖЕРЕЛІ значення, а не в тому, хто
+    # оголосив поле: більшість чистих імен — стандартні поля Odoo (city/street/
+    # street2/zip/state/country), але `area`/`hromada` — теж колонки власника,
+    # лише додані цим модулем (див. dm.geodata.address.mixin). У них при цьому
+    # лежить ВІДРЕНДЕРЕНИЙ block_format_* , тож {area} = «Личаківський р-н
+    # (Старий р-н)», а {gd_area} = сире «Личаківський р-н».
+    # {state} і {country} беруться з довідників Odoo (state_id / country_id) —
+    # жодних літералів.
+    # Значення для чистих імен дає міксин (_geodata_doc_values, owner-first); на
+    # самому довіднику власника немає, тож там їх дає _clean_values.
     _GD_KEYS = {
         "Index_": "gd_index",
         "Region": "gd_region", "Area": "gd_area", "Hromada": "gd_hromada",
@@ -462,10 +533,66 @@ class GeodataAddress(models.Model):
             return ("%g" % value) if value else ""
         return str(value)
 
+    # Мова адреси (наш перемикач ua/en) -> код мови Odoo. Потрібен, бо
+    # `res.country.name` — перекладне поле.
+    _LANG_CODES = {"ua": "uk_UA", "en": "en_US"}
+
+    @api.model
+    def _country_name(self, lang="ua", country=None):
+        """Country name from `res.country`, in the requested address language.
+
+        `res.country.name` is translatable, so it must be read in the ADDRESS
+        language rather than the user's - otherwise an EN document would render
+        the country in Ukrainian. Falls back to Ukraine: the directory model has
+        no owner to ask, and the module covers Ukraine only.
+        """
+        country = country or self.env.ref("base.ua", raise_if_not_found=False)
+        if not country:
+            return ""
+        lang_code = self._LANG_CODES.get(lang, "en_US")
+        return country.with_context(lang=lang_code).name or ""
+
+    @api.model
+    def _clean_values(self, values):
+        """Clean (owner-named) placeholders derived from directory values.
+
+        The template engine serves two value dictionaries: the owner side
+        (`dm.geodata.address.mixin._geodata_doc_values`) and this model. Clean
+        names mean "the owner's actual address", `gd_` means "the directory".
+        On the directory model there IS no owner, so every clean name equals its
+        directory value - exactly the `pick()` branch the mixin takes when the
+        owner field is empty. Without these keys the shipped default templates
+        (which use `{city}` / `{street}` / `{zip}` / `{state}` / `{area}` /
+        `{hromada}`) would render this model's `address_display`,
+        `address_full_*` and `address_letter_*` almost empty.
+
+        `values` are the already formatted API-named placeholders.
+        """
+        # Рядок вулиці = вулиця + будинок, тим самим складанням, що й у міксині
+        # (та block_format_street).
+        street = values["StreetFull"]
+        house = "%s%s" % (values["HouseNum"], values["HouseNumAdd"])
+        if street and house:
+            street = "%s, %s" % (street, house)
+        elif house:
+            street = house
+        return {
+            "zip": values["Index_"],
+            # Область без суфікса «обл.» — як назва res.country.state у власника.
+            "state": self._normalize_region_name(values["Region"]),
+            "area": values["Area"],
+            "hromada": values["HromadaFull"],
+            "city": values["CityFull"],
+            "street": street,
+            # street2 (кв./офіс) існує лише у власника — у довідника його немає.
+            "street2": "",
+        }
+
     def _api_template_values(self, lang="ua", extra=None):
         """{placeholder: рядок} для рушія. Імена = ключі API; значення сирі з
-        очищуваних колонок (EN із відкатом на UA). Плюс синтетичні country/updated
-        та `extra` (Odoo-поля власника)."""
+        очищуваних колонок (EN із відкатом на UA). Плюс синтетичні country/updated,
+        чисті (owner-)імена — тут вони дорівнюють довідниковим (див. _clean_values)
+        — та `extra` (поля власника)."""
         self.ensure_one()
         values = {api_key: self._template_str(self._field_lang(field, lang))
                   for api_key, field in self._API_TEMPLATE_FIELDS.items()}
@@ -487,9 +614,12 @@ class GeodataAddress(models.Model):
         values["MetroLineColor"] = (
             self._METRO_LINE_COLORS.get(self.metro_line, "#555")
             if self.metro_line else "")
-        values["country"] = {"ua": "УКРАЇНА", "en": "Ukraine"}.get(lang, "Ukraine")
+        # Країна — з довідника res.country (як {state} зі state_id), а не літерал.
+        # На цій моделі власника немає, тож завжди Україна.
+        values["country"] = self._country_name(lang)
         values["updated"] = (format_datetime(self.env, self.write_date)
                              if self.write_date else "")
+        values.update(self._clean_values(values))
         # `gd_`-аліаси довідникових значень (додаємо ДО extra, щоб gd_ лишалися
         # суто довідниковими, а owner-перекриття через extra їх не зачіпали).
         for camel, gd in self._GD_KEYS.items():
@@ -672,45 +802,36 @@ class GeodataAddress(models.Model):
             "address_level": get("AddressLevel"),
             "post_index": get("Index_") or get("Index_8x"),
             "city_string": get("CityString"),
-            "city_string_en": get("CityStringEn"),
             "city_string_ru": get("CityStringRu"),
             "street_string": get("StreetString"),
             "house_string": get("HouseString"),
-            "region": get("Region"), "region_en": get("RegionEn"), "region_ru": get("RegionRu"),
-            "area": get("Area"), "area_en": get("AreaEn"), "area_ru": get("AreaRu"),
-            "hromada": get("Hromada"), "hromada_en": get("HromadaEn"), "hromada_ru": get("HromadaRu"),
-            "city": get("City"), "city_en": get("CityEn"), "city_ru": get("CityRu"),
+            "region": get("Region"), "region_ru": get("RegionRu"),
+            "area": get("Area"), "area_ru": get("AreaRu"),
+            "hromada": get("Hromada"), "hromada_ru": get("HromadaRu"),
+            "city": get("City"), "city_ru": get("CityRu"),
             "suburb": get("Suburb"),
             "settlement_type": get("SettlementType"),
-            "settlement_type_en": get("SettlementTypeEn"),
             "settlement_type_ru": get("SettlementTypeRu"),
             "city_district": get("CityDistrict"),
-            "city_district_en": get("CityDistrictEn"),
             "city_district_ru": get("CityDistrictRu"),
-            "street": get("Street"), "street_en": get("StreetEn"), "street_ru": get("StreetRu"),
+            "street": get("Street"), "street_ru": get("StreetRu"),
             "str_type": get("StrType") or get("StreetType"),
-            "str_type_en": get("StrTypeEn") or get("StreetTypeEn"),
             "str_type_ru": get("StrTypeRu") or get("StreetTypeRu"),
             "house_num": get("HouseNum"), "house_num_add": get("HouseNumAdd"),
-            "house_num_add_en": get("HouseNumAddEn"),
             "house_num_add_ru": get("HouseNumAddRu"),
             "koatuu": get("KOATUU"), "kato": get("KATO"), "phone_code": get("PhoneCode"),
             "is_regional_center": get("IsOCentre"),
             "is_district_center": get("IsRCentre"),
             "terr_status": get("TerrStatus"),
-            "region_old": get("RegionOld"),
-            "region_old_en": get("RegionOldEn"), "region_old_ru": get("RegionOldRu"),
-            "area_old": get("AreaOld"), "area_old_en": get("AreaOldEn"), "area_old_ru": get("AreaOldRu"),
-            "hromada_old": get("HromadaOld"),
-            "hromada_old_en": get("HromadaOldEn"), "hromada_old_ru": get("HromadaOldRu"),
+            "region_old": get("RegionOld"), "region_old_ru": get("RegionOldRu"),
+            "area_old": get("AreaOld"), "area_old_ru": get("AreaOldRu"),
+            "hromada_old": get("HromadaOld"), "hromada_old_ru": get("HromadaOldRu"),
             "suburb_old": get("SuburbOld"),
-            "city_old": get("CityOld"), "city_old_en": get("CityOldEn"), "city_old_ru": get("CityOldRu"),
+            "city_old": get("CityOld"), "city_old_ru": get("CityOldRu"),
             "settlement_type_old": get("SettlementTypeOld"),
-            "settlement_type_old_en": get("SettlementTypeOldEn"),
             "settlement_type_old_ru": get("SettlementTypeOldRu"),
-            "street_old": get("StreetOld"), "street_old_en": get("StreetOldEn"), "street_old_ru": get("StreetOldRu"),
+            "street_old": get("StreetOld"), "street_old_ru": get("StreetOldRu"),
             "str_type_old": get("StrTypeOld") or get("StreetTypeOld"),
-            "str_type_old_en": get("StrTypeOldEn") or get("StreetTypeOldEn"),
             "str_type_old_ru": get("StrTypeOldRu") or get("StreetTypeOldRu"),
             "metro_station": get("MetroStation") or get("MetroName"),
             "metro_line": get("MetroLine"), "metro_distance": get("MetroDistance"),
@@ -731,28 +852,29 @@ class GeodataAddress(models.Model):
         return vals
 
     # Поля нижчих рівнів, що очищуються при (пере)виборі вищого рівня (clear-down).
+    # EN тут не згадується: `*_en` — computed від UA, тож чистяться самі.
     _CLEAR_BELOW_CITY = (
-        "street", "str_type", "street_en", "str_type_en", "street_ru", "str_type_ru",
-        "street_old", "str_type_old", "street_old_en", "str_type_old_en",
-        "street_old_ru", "str_type_old_ru", "street_string",
-        "house_num", "house_num_add", "house_num_add_en", "house_num_add_ru",
+        "street", "str_type", "street_ru", "str_type_ru",
+        "street_old", "str_type_old", "street_old_ru", "str_type_old_ru",
+        "street_string",
+        "house_num", "house_num_add", "house_num_add_ru",
         "house_string", "street_ref", "house_ref",
         "street_moniker", "latitude", "longitude",
         # Район міста і метро — нижчого рівня (вулиця/будинок); при перевиборі
         # міста старі значення не мають «прилипати».
-        "city_district", "city_district_en", "city_district_ru",
+        "city_district", "city_district_ru",
         "metro_station", "metro_line", "metro_distance",
     )
     _CLEAR_BELOW_STREET = (
-        "house_num", "house_num_add", "house_num_add_en", "house_num_add_ru",
+        "house_num", "house_num_add", "house_num_add_ru",
         "house_string", "house_ref", "latitude", "longitude",
-        "city_district", "city_district_en", "city_district_ru",
+        "city_district", "city_district_ru",
         "metro_station", "metro_line", "metro_distance",
     )
     # Опційні поля рівня, що СКИДАЮТЬСЯ, коли payload (пере)визначає цей рівень на
     # перевикористаному записі: відсутній у відповіді ключ означає «його немає»,
     # тож стара назва (район/громада) попередньої адреси не «прилипає». EN-варіанти
-    # (`*_old_en`) керує fetch_en_translit (повний перезапис); тут — UA/RU.
+    # (`*_old_en`) — computed від цих же UA-полів, тож тут лише UA/RU.
     _SETTLEMENT_RESET = (
         # Поштовий індекс прив'язаний до вулиці/будинку, тож при (пере)виборі
         # населеного пункту скидаємо його, щоб старий індекс попередньої адреси
@@ -853,74 +975,15 @@ class GeodataAddress(models.Model):
         self.api_payload = payload
 
     # ------------------------------------------------------------------
-    # Англійська транслітерація (синхронно, лише на вимогу — AUDIT #5)
-    # ------------------------------------------------------------------
-    # Кожна колонка `_en` -> ключ(і) API, що несуть її транслітероване значення у
-    # відповіді lang=en. Керує повним (не частковим) захопленням EN нижче.
-    _EN_API_KEYS = {
-        "region_en": ("Region",),
-        "area_en": ("Area",),
-        "hromada_en": ("Hromada",),
-        "city_en": ("City",),
-        "settlement_type_en": ("SettlementType",),
-        "city_district_en": ("CityDistrict",),
-        "street_en": ("Street",),
-        "str_type_en": ("StrType", "StreetType"),
-        "house_num_add_en": ("HouseNumAdd",),
-        "city_string_en": ("CityString",),
-        "region_old_en": ("RegionOld",),
-        "area_old_en": ("AreaOld",),
-        "hromada_old_en": ("HromadaOld",),
-        "settlement_type_old_en": ("SettlementTypeOld",),
-        "city_old_en": ("CityOld",),
-        "street_old_en": ("StreetOld",),
-        "str_type_old_en": ("StrTypeOld", "StreetTypeOld"),
-    }
-
-    def fetch_en_translit(self, credential):
-        """Fetch EN transliteration for this address from the API. Called
-        once at on_select time, never inside create()/compute.
-
-        Captures ALL `_en` columns the response carries (including the house
-        suffix, settlement district and old names), not just a hand-picked few.
-
-        The whole `_en` set is rewritten EVERY time (missing keys -> False), so a
-        reused address record never keeps a previous address's transliteration:
-        otherwise, when a new selection's EN response omits a field (e.g. a city
-        without a district) or the EN call fails/returns nothing, the stale `_en`
-        would survive and `address_full_en` would show a DIFFERENT address than
-        `address_full_ua` (and re-saving would not fix it, since it just recomputes
-        from the stale `_en`). On an empty/failed EN response every `_en` is
-        cleared, so EN gracefully falls back to the UA value (same address, just
-        not transliterated) instead of lingering on the old one.
-        """
-        self.ensure_one()
-        if self.env.context.get("geodata_skip_translit") or not credential:
-            return
-        if not credential.store_english:
-            return
-        query = self._rebuild_address_string()
-        if not query:
-            return
-        results = credential.api_address(query, lang="en_US")
-        data = results[0] if results else {}
-        # ПОВНИЙ набір _en: відсутні у відповіді ключі -> False (очищення), щоб не
-        # лишився сегмент попередньої адреси. Порожня відповідь -> усі _en чистяться.
-        vals = {field: next((data.get(k) for k in keys if data.get(k)), False)
-                for field, keys in self._EN_API_KEYS.items()}
-        if data:
-            self._merge_raw(data, "en")
-        self.with_context(geodata_skip_translit=True).write(vals)
-
-    # ------------------------------------------------------------------
     # Відображення значень на боці партнера
     # ------------------------------------------------------------------
     @staticmethod
     def _normalize_region_name(region):
         """Strip the oblast suffix so 'Миколаївська обл.' matches the synced
-        res.country.state name 'Миколаївська'."""
+        res.country.state name 'Миколаївська'. The EN forms are covered too:
+        transliterating 'обл.' yields 'obl.'."""
         text = (region or "").strip()
-        for suffix in (" область", " обл.", " обл", " oblast"):
+        for suffix in (" область", " обл.", " обл", " oblast", " obl.", " obl"):
             if text.lower().endswith(suffix):
                 return text[: -len(suffix)].strip()
         return text

@@ -13,7 +13,6 @@ class TestAddressFormat(TransactionCase):
             "api_url": "https://example.test",
             "api_username": "u",
             "api_password": "p",
-            "store_english": True,
         })
         cls.address = cls.env["dm.geodata.address"].create({
             "region": "Київ",
@@ -24,14 +23,97 @@ class TestAddressFormat(TransactionCase):
             "house_num": "1",
             "post_index": "01001",
         })
+        # {country} береться з res.country, а назва там перекладна — тож
+        # очікування будуємо з того самого джерела, а не з літерала (інакше тест
+        # червонітиме на БД без встановленої української локалі).
+        ukraine = cls.env.ref("base.ua")
+        cls.ua_name = ukraine.with_context(lang="uk_UA").name
+        cls.en_name = ukraine.with_context(lang="en_US").name
 
     # --- Дефолтний документний шаблон (сирий) ---------------------------------
     def test_default_document_raw_ua(self):
         self.address._compute_full_addresses()
         self.assertEqual(
             self.address.address_full_ua,
-            "УКРАЇНА, 01001, місто Київ, вул. Хрещатик, 1",
+            "%s, 01001, місто Київ, вул. Хрещатик, 1" % self.ua_name,
         )
+
+    def test_default_letter_ua(self):
+        # Конверт не має {country}, тож без чистих імен рядок був би повністю
+        # порожній (усі плейсхолдери рядка порожні -> рушій викидає рядок).
+        self.address._compute_full_addresses()
+        self.assertEqual(
+            self.address.address_letter_ua,
+            "вул. Хрещатик, 1, місто Київ, 01001",
+        )
+
+    def test_default_document_en(self):
+        # Дефолтний шаблон на боці довідника + локальна транслітерація.
+        self.address._compute_full_addresses()
+        self.assertEqual(
+            self.address.address_full_en,
+            "%s, 01001, misto Kyiv, vul. Khreshchatyk, 1" % self.en_name,
+        )
+
+    # --- {country} з довідника res.country, а не літерал -----------------------
+    def test_country_comes_from_res_country_per_address_lang(self):
+        # Назва перекладна, тож мова АДРЕСИ (ua/en), а не мова користувача.
+        self.assertEqual(
+            self.address._render_api_template("{country}", "ua"), self.ua_name)
+        self.assertEqual(
+            self.address._render_api_template("{country}", "en"), self.en_name)
+        # На моделі довідника власника немає -> завжди Україна.
+        self.assertEqual(
+            self.env["dm.geodata.address"]._country_name("ua"), self.ua_name)
+
+    def test_country_follows_owner_country_id(self):
+        # У власника країна вирішує: {country} — не захардкоджена Україна.
+        poland = self.env.ref("base.pl")
+        partner = self.env["res.partner"].create({
+            "name": "PL Partner", "country_id": poland.id,
+            "city": "Warszawa", "street": "Marszalkowska 1",
+        })
+        vals = partner._geodata_doc_values("ua")
+        self.assertEqual(vals["country"], poland.with_context(lang="uk_UA").name)
+        self.assertNotEqual(vals["country"], self.ua_name)
+
+    def test_country_falls_back_to_ukraine_when_owner_has_none(self):
+        partner = self.env["res.partner"].create({
+            "name": "No country", "country_id": False, "city": "Київ",
+        })
+        self.assertEqual(partner._geodata_doc_values("ua")["country"], self.ua_name)
+
+    # --- Чисті (owner-)імена на боці довідника --------------------------------
+    def test_clean_names_equal_directory_values(self):
+        # На dm.geodata.address власника немає, тож {city}/{street}/{zip}/{state}
+        # дорівнюють довідниковим значенням ({gd_city_full}/{gd_street_full}+буд./
+        # {gd_index}/нормалізований {gd_region}).
+        addr = self.env["dm.geodata.address"].create({
+            "region": "Львівська обл.", "area": "Личаківський р-н",
+            "city": "Львів", "settlement_type": "місто",
+            "str_type": "вул.", "street": "Личаківська",
+            "house_num": "5", "house_num_add": "Б", "post_index": "79000",
+        })
+        self.assertEqual(addr._render_api_template("{city}", "ua"), "місто Львів")
+        self.assertEqual(
+            addr._render_api_template("{street}", "ua"), "вул. Личаківська, 5Б")
+        self.assertEqual(addr._render_api_template("{zip}", "ua"), "79000")
+        # {state} — без суфікса «обл.», як назва res.country.state.
+        self.assertEqual(addr._render_api_template("{state}", "ua"), "Львівська")
+        self.assertEqual(
+            addr._render_api_template("{area}", "ua"), "Личаківський р-н")
+        # street2 (кв./офіс) існує лише у власника.
+        self.assertEqual(addr._render_api_template("{street2}", "ua"), "")
+
+    def test_clean_and_gd_names_stay_distinct(self):
+        # Чисте ім'я і `gd_` дають однакове значення лише тому, що власника тут
+        # немає; сирий CamelCase лишається сирим (без склейки типу з назвою).
+        self.assertEqual(
+            self.address._render_api_template("{city}", "ua"), "місто Київ")
+        self.assertEqual(
+            self.address._render_api_template("{gd_city_full}", "ua"), "місто Київ")
+        self.assertEqual(
+            self.address._render_api_template("{City}", "ua"), "Київ")
 
     # --- Сирі значення без склейок --------------------------------------------
     def test_raw_values_no_merge(self):
@@ -137,18 +219,33 @@ class TestAddressFormat(TransactionCase):
             addr._render_api_template("{CityFull}", "ua"),
             "село (селище) Іванівка")
 
-    # --- EN: сирі значення з _en (відкат на UA) -------------------------------
+    # --- EN: значення з _en (локальна транслітерація UA) -----------------------
     def test_en_uses_en_columns(self):
         addr = self.env["dm.geodata.address"].create({
-            "city": "Львів", "city_en": "Lviv",
-            "str_type": "вул.", "str_type_en": "vul.",
-            "street": "Личаківська", "street_en": "Lychakivska",
+            "city": "Львів",
+            "str_type": "вул.",
+            "street": "Личаківська",
         })
         self.assertEqual(addr._render_api_template("{City}", "en"), "Lviv")
         self.assertEqual(
             addr._render_api_template("{StrType} {Street}", "en"), "vul. Lychakivska")
-        # Відкат на UA, коли _en порожнє.
         self.assertEqual(addr._render_api_template("{City}", "ua"), "Львів")
+
+    def test_en_translits_fields_without_en_column(self):
+        # Поля без `_en`-двійника (напр. Suburb) транслітеруються на льоту,
+        # щоб кирилиця не просочилася в англомовну адресу.
+        addr = self.env["dm.geodata.address"].create({
+            "city": "Львів", "suburb": "Левандівка",
+        })
+        self.assertEqual(addr._render_api_template("{Suburb}", "en"), "Levandivka")
+        self.assertEqual(addr._render_api_template("{Suburb}", "ua"), "Левандівка")
+
+    def test_en_keeps_non_text_values_intact(self):
+        # Координати/прапорці не є текстом — транслітерація їх не чіпає.
+        addr = self.env["dm.geodata.address"].create({
+            "city": "Львів", "latitude": 49.8397, "is_regional_center": True,
+        })
+        self.assertEqual(addr._render_api_template("{Lat_}", "en"), "49.8397")
 
     # --- Кастомний документний шаблон -----------------------------------------
     def test_custom_document_format(self):
@@ -232,7 +329,7 @@ class TestAddressFormat(TransactionCase):
         # рядок на картці контакту (address_format_display).
         self.assertEqual(
             self.address.address_display,
-            "УКРАЇНА, 01001, місто Київ, вул. Хрещатик, 1")
+            "%s, 01001, місто Київ, вул. Хрещатик, 1" % self.ua_name)
 
     # --- Дефолтний display-шаблон першого рядка картки ------------------------
     def test_default_display_template(self):
@@ -241,7 +338,7 @@ class TestAddressFormat(TransactionCase):
         # {CityFull}/{StreetFull}; порожні поля/дужки стиснуто; область Києва
         # не дублюється (місто спецстатусу).
         self.assertEqual(
-            result, "УКРАЇНА, 01001, місто Київ, вул. Хрещатик, 1")
+            result, "%s, 01001, місто Київ, вул. Хрещатик, 1" % self.ua_name)
         self.assertNotIn("()", result)
         self.assertNotIn("гр.", result)  # без артефакту громади
 

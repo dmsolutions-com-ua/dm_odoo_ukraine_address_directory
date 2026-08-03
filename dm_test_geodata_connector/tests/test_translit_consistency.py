@@ -1,5 +1,3 @@
-from unittest.mock import patch
-
 from odoo.tests.common import TransactionCase
 
 
@@ -7,7 +5,9 @@ class TestTranslitConsistency(TransactionCase):
     """EN transliteration must stay in lock-step with the UA address on a REUSED
     record. Regression for: after several address changes the «Інформація про
     адресу» tab showed different UA vs EN addresses, and re-saving did not fix it
-    (the stale `_en` survived and `address_full_en` recomputed from it)."""
+    (the stale `_en` survived and `address_full_en` recomputed from it). Since EN
+    is a computed derivative of UA, a stale value is structurally impossible —
+    these tests pin that guarantee down."""
 
     @classmethod
     def setUpClass(cls):
@@ -17,89 +17,76 @@ class TestTranslitConsistency(TransactionCase):
             "api_url": "https://example.test",
             "api_username": "u",
             "api_password": "p",
-            "store_english": True,
         })
         cls.Geo = cls.env["dm.geodata.address"]
 
-    def _fetch_en(self, addr, en_response):
-        """Run fetch_en_translit with a controlled EN api_address response."""
-        with patch.object(type(self.credential), "api_address",
-                          return_value=en_response):
-            addr.fetch_en_translit(self.credential)
+    # Явний шаблон замість дефолтного з credential — тест перевіряє транслітерацію,
+    # а не поточний дефолт формату документа.
+    _EN_TEMPLATE = "{Region}, {Area}, {City}, {StrType} {Street}, {HouseNum}"
 
-    def test_stale_en_field_cleared_when_new_response_omits_it(self):
+    def test_stale_en_field_cleared_when_ua_omits_it(self):
         # Адреса A з районом -> area_en заповнене.
         addr = self.Geo.create({
             "region": "Львівська обл.", "area": "Личаківський р-н",
             "city": "Львів", "str_type": "вул.", "street": "Личаківська",
         })
-        self._fetch_en(addr, [{
-            "Region": "Lvivska obl.", "Area": "Lychakivskyi r-n",
-            "City": "Lviv", "Street": "Lychakivska", "StrType": "vul.",
-        }])
         self.assertEqual(addr.area_en, "Lychakivskyi r-n")
 
-        # Перемикаємось на адресу B БЕЗ району (UA оновлено), а EN-відповідь B не
-        # містить Area -> area_en має ОЧИСТИТИСЬ, а не лишитись від A.
+        # Перемикаємось на адресу B БЕЗ району -> area_en має ОЧИСТИТИСЬ.
         addr.write({"area": False, "region": "Київ",
                     "city": "Київ", "street": "Хрещатик"})
-        self._fetch_en(addr, [{
-            "Region": "Kyiv", "City": "Kyiv",
-            "Street": "Khreshchatyk", "StrType": "vul.",
-        }])
         self.assertFalse(
             addr.area_en,
             "stale area_en from the previous address must be cleared",
         )
         self.assertEqual(addr.city_en, "Kyiv")
 
-    def test_empty_en_response_clears_and_falls_back_to_ua(self):
-        # Адреса A з повним EN.
+    def test_empty_ua_gives_empty_en(self):
         addr = self.Geo.create({
             "region": "Львівська обл.", "city": "Львів",
             "str_type": "вул.", "street": "Личаківська",
         })
-        self._fetch_en(addr, [{
-            "Region": "Lvivska obl.", "City": "Lviv",
-            "Street": "Lychakivska", "StrType": "vul.",
-        }])
         self.assertEqual(addr.city_en, "Lviv")
 
-        # Нова адреса B, але EN-запит ПОРОЖНІЙ (збій/немає збігу/тротлінг).
-        addr.write({"region": "Київ", "city": "Київ", "street": "Хрещатик"})
-        self._fetch_en(addr, [])
-
-        # Усі _en очищено -> EN не показує стару адресу A; падає на UA (кирилиця).
+        addr.write({"region": False, "city": False,
+                    "street": False, "str_type": False})
         self.assertFalse(addr.city_en)
         self.assertFalse(addr.street_en)
-        en_doc = addr._format_full_address("en")
+        self.assertFalse(addr.region_en)
+        en_doc = addr._render_api_template(self._EN_TEMPLATE, "en")
         self.assertNotIn("Lviv", en_doc,
                          "EN of the previous address must not persist")
         self.assertNotIn("Lychakivska", en_doc)
-        self.assertIn("Київ", en_doc)  # UA-fallback тієї ж адреси
 
     def test_ua_and_en_consistent_after_switch(self):
-        # Наскрізно: після зміни адреси документні UA та EN збігаються (та сама
-        # адреса), без залишків попередньої.
+        # Наскрізно: після зміни адреси документні UA та EN описують ОДНУ адресу,
+        # без залишків попередньої.
         addr = self.Geo.create({
             "region": "Львівська обл.", "city": "Львів",
             "str_type": "вул.", "street": "Личаківська", "house_num": "5",
         })
-        self._fetch_en(addr, [{
-            "Region": "Lvivska obl.", "City": "Lviv",
-            "Street": "Lychakivska", "StrType": "vul.",
-        }])
         addr.write({
             "region": "Київ", "city": "Київ",
             "str_type": "вул.", "street": "Хрещатик", "house_num": "1",
         })
-        self._fetch_en(addr, [{
-            "Region": "Kyiv", "City": "Kyiv",
-            "Street": "Khreshchatyk", "StrType": "vul.",
-        }])
-        en_doc = addr._format_full_address("en")
-        # Нова адреса в EN, жодного сегмента попередньої.
+        en_doc = addr._render_api_template(self._EN_TEMPLATE, "en")
         self.assertIn("Kyiv", en_doc)
         self.assertIn("Khreshchatyk", en_doc)
         self.assertNotIn("Lviv", en_doc)
         self.assertNotIn("Lychakivska", en_doc)
+
+    def test_clear_down_drops_en_of_lower_levels(self):
+        # Перевибір міста чистить вулицю/будинок (clear-down) — EN зникає разом.
+        addr = self.Geo.create_from_api({
+            "Id": 1, "City": "Львів", "SettlementType": "місто",
+            "Street": "Личаківська", "StrType": "вул.",
+            "HouseNum": "5", "HouseNumAdd": "Б",
+        })
+        self.assertEqual(addr.street_en, "Lychakivska")
+        self.assertEqual(addr.house_num_add_en, "B")
+
+        addr.update_from_api({"Id": 2, "City": "Київ", "SettlementType": "місто"})
+        self.assertFalse(addr.street_en)
+        self.assertFalse(addr.str_type_en)
+        self.assertFalse(addr.house_num_add_en)
+        self.assertEqual(addr.city_en, "Kyiv")

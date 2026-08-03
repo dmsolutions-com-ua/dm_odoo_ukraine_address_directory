@@ -7,6 +7,8 @@ from markupsafe import Markup
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError
 
+from .geodata_translit import transliterate
+
 _logger = logging.getLogger(__name__)
 
 # Монікери API живуть ~15 хв — у межах цього вікна збережений монікер реюзимо
@@ -165,15 +167,16 @@ class GeodataAddressMixin(models.AbstractModel):
     # m2o, тож залежності лише від geodata_address_id НЕ перерахувались би при
     # перевиборі міста/вулиці. Додаємо адресні поля власника (через _geodata_fields,
     # з гардом in self._fields, бо на абстрактному міксині їх немає) + write_date,
-    # щоб вкладка свіжала на вибір підказки/Enter/blur/збереження.
+    # щоб вкладка свіжала на вибір підказки/Enter/blur/збереження. `country_id`
+    # у списку тому, що від нього залежить значення {country} у шаблонах.
     @api.depends(lambda self: [
         "geodata_address_id", "geodata_address_id.write_date",
     ] + [self._geodata_fields[k]
-         for k in ("street2", "city", "street", "zip", "area", "hromada", "state_id")
+         for k in ("street2", "city", "street", "zip", "area", "hromada",
+                   "state_id", "country_id")
          if self._geodata_fields.get(k) in self._fields])
     def _compute_geodata_documents(self):
         credential = self.env["dm.geodata.api.credential"].sudo().get_credential()
-        store_en = credential.store_english if credential else False
         Geo = self.env["dm.geodata.address"]
         for rec in self:
             fmap = rec._geodata_fields
@@ -196,13 +199,10 @@ class GeodataAddressMixin(models.AbstractModel):
                 rec.geodata_address_letter_ua = Geo._render_values(letter, vals_ua)
                 rec.geodata_address_display = Geo._render_values(
                     credential.address_format_display, vals_ua)
-                if store_en:
-                    vals_en = rec._geodata_doc_values("en")
-                    rec.geodata_address_full_en = Geo._render_values(doc, vals_en)
-                    rec.geodata_address_letter_en = Geo._render_values(letter, vals_en)
-                else:
-                    rec.geodata_address_full_en = False
-                    rec.geodata_address_letter_en = False
+                # EN рендериться завжди — транслітерація локальна й безкоштовна.
+                vals_en = rec._geodata_doc_values("en")
+                rec.geodata_address_full_en = Geo._render_values(doc, vals_en)
+                rec.geodata_address_letter_en = Geo._render_values(letter, vals_en)
             else:
                 rec.geodata_address_full_ua = False
                 rec.geodata_address_full_en = False
@@ -212,10 +212,14 @@ class GeodataAddressMixin(models.AbstractModel):
 
     def _geodata_doc_values(self, lang="ua"):
         """Значення для документної/листової адреси та рядка картки (Підхід A):
-        база — СТАНДАРТНІ поля Odoo (чисті імена = фактична адреса власника),
-        плюс `gd_`-збагачення з пов'язаної dm.geodata.address (коли зв'язок є) та
+        база — чисті імена = ФАКТИЧНА адреса власника (переважно стандартні поля
+        Odoo, але `area`/`hromada` — колонки, що їх додає цей міксин, а `state`/
+        `country` беруться з довідників через state_id/country_id), плюс
+        `gd_`-збагачення з пов'язаної dm.geodata.address (коли зв'язок є) та
         Odoo-поля власника (name/phone/…). EN: верифіковані рівні (`*_ref`)
-        беруться транслітеровані з довідника; ручні лишаються UA (Фаза 1)."""
+        беруться з довідника (вже транслітеровані), решта — ручний ввід власника,
+        який транслітерується тут же локально, щоб EN-адреса не змішувала
+        латиницю з кирилицею."""
         self.ensure_one()
         fmap = self._geodata_fields
         en = lang == "en"
@@ -232,10 +236,12 @@ class GeodataAddressMixin(models.AbstractModel):
 
         def pick(owner_val, dir_val, verified):
             """owner-first із відкатом на довідник; для EN верифікований рівень
-            (`*_ref`) береться транслітерований з довідника."""
+            (`*_ref`) береться транслітерований з довідника, а ручний ввід
+            транслітерується локально (для латиниці транслітерація — no-op)."""
             if en and verified and dir_val:
                 return dir_val
-            return owner_val or dir_val
+            value = owner_val or dir_val
+            return transliterate(value) if en else value
 
         # Директорні композити (рядок вулиці = вулиця + будинок, як block_format_street).
         dir_street = dirv.get("gd_street_full", "")
@@ -256,15 +262,22 @@ class GeodataAddressMixin(models.AbstractModel):
         # лишаємо owner-рядок (не змішуємо мови), тож вважаємо неверифікованим.
         street_v = bool(geo and geo.street_ref and not (geo.house_num and not geo.house_ref))
 
+        # Країна — з country_id власника (як {state} зі state_id), із відкатом на
+        # Україну, коли поле порожнє. Мапа fmap покриває нестандартні імена
+        # (res.bank `country`, hr.employee `private_country_id`).
+        country_field = fmap.get("country_id")
+        owner_country = (self[country_field]
+                         if country_field in self._fields else False)
         clean = {
-            "country": {"ua": "УКРАЇНА", "en": "Ukraine"}.get(lang, "Ukraine"),
+            "country": Geo._country_name(lang, owner_country),
             "zip": ov("zip") or dirv.get("gd_index", ""),
             "state": pick(owner_state, dir_state, settlement_v),
             "area": pick(ov("area"), dirv.get("gd_area", ""), settlement_v),
             "hromada": pick(ov("hromada"), dirv.get("gd_hromada_full", ""), settlement_v),
             "city": pick(ov("city"), dirv.get("gd_city_full", ""), settlement_v),
             "street": pick(ov("street"), dir_street, street_v),
-            "street2": ov("street2"),
+            # street2 (кв./офіс) завжди ручний — для EN транслітеруємо.
+            "street2": transliterate(ov("street2")) if en else ov("street2"),
         }
 
         result = dict(dirv)                          # gd_/CamelCase збагачення
@@ -541,20 +554,16 @@ class GeodataAddressMixin(models.AbstractModel):
             if self._is_house_only_change(geo, vals[street_field]):
                 geo.write({
                     "house_ref": False, "house_num": False, "house_num_add": False,
-                    "house_num_add_en": False, "house_string": False,
+                    "house_string": False,
                     "latitude": 0.0, "longitude": 0.0,
                 })
             else:
-                # Очищуємо й EN-відповідники (street_en/str_type_en/
-                # house_num_add_en); інакше EN документна/листова адреса збереже
-                # стару транслітеровану вулицю, тоді як UA її вже прибрала
-                # (_field_lang для EN відкочується до *_en).
+                # EN-відповідники (street_en/str_type_en/house_num_add_en) чистити
+                # не треба: вони computed від цих же UA-полів і зникають разом з ними.
                 geo.write({
                     "street_ref": False, "house_ref": False, "street": False,
                     "str_type": False, "street_string": False, "house_num": False,
                     "house_num_add": False, "house_string": False,
-                    "street_en": False, "str_type_en": False,
-                    "house_num_add_en": False,
                     "latitude": 0.0, "longitude": 0.0,
                 })
 
@@ -840,7 +849,6 @@ class GeodataAddressMixin(models.AbstractModel):
     def apply_address(self, record_id, api_data, current_address_id=False):
         if not api_data:
             return {}
-        credential = self._geodata_credential()
         Geo = self.env["dm.geodata.address"].sudo()
 
         geo_address = Geo.browse(int(current_address_id)) if current_address_id else Geo
@@ -863,9 +871,6 @@ class GeodataAddressMixin(models.AbstractModel):
                       else self.env.company.id)
         if geo_address.company_id.id != company_id:
             geo_address.company_id = company_id
-
-        if credential:
-            geo_address.fetch_en_translit(credential)
 
         values = self._geodata_owner_values(geo_address)
         values["geodata_address_id"] = {
