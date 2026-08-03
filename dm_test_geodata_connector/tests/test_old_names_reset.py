@@ -2,10 +2,14 @@ from odoo.tests.common import TransactionCase
 
 
 class TestOldNamesReset(TransactionCase):
-    """Regression: on a REUSED dm.geodata.address, selecting a new settlement that
-    has NO historical name must NOT inherit the old name (city/area/hromada) from a
-    previously selected address. Root cause was `_api_data_to_vals` dropping absent
-    (None) keys + no settlement-level reset in `update_from_api`."""
+    """Regressions of the LEVEL RESETS on a REUSED dm.geodata.address.
+
+    `_api_data_to_vals` deliberately drops absent (None) keys so that merging the
+    city -> street -> house chain never wipes the levels a payload does not carry.
+    The counterweight is the level resets in `update_from_api`: when a payload
+    DEFINES a level, a missing key means "there is none", so the field is cleared.
+    Whenever that pairing is incomplete, data of the previously selected address
+    silently sticks — historical names, post index, coordinates, metro, …"""
 
     @classmethod
     def setUpClass(cls):
@@ -122,3 +126,66 @@ class TestOldNamesReset(TransactionCase):
         addr.update_from_api({"HouseId": 9, "HouseNum": "7"})
         self.assertEqual(addr.house_num, "7")
         self.assertFalse(addr.house_num_add, "stale house letter must be cleared")
+
+    # ------------------------------------------------------------------
+    # Рівень будинку володіє координатами, індексом і рядком будинку: payload
+    # без них означає «їх немає», а не «лиши попередні».
+    # ------------------------------------------------------------------
+    def _addr_with_house_coords(self):
+        """Адреса, де і населений пункт, і будинок мають координати."""
+        addr = self.Geo.create_from_api(dict(
+            self._CITY_NO_OLD, Lat_S="49.9935", Long_S="36.2304"))
+        addr.update_from_api({"StreetId": 20, "Street": "Сумська", "StrType": "вул."})
+        addr.update_from_api({
+            "HouseId": 30, "HouseNum": "5", "Index_": "61000",
+            "Lat": "49.995000", "Long": "36.231000",
+            "MetroName": "Історичний музей", "MetroLine": "Холодногірсько-Заводська",
+        })
+        return addr
+
+    def test_reselect_house_without_coords_clears_stale_ones(self):
+        # Головний кейс зі звіту: новий будинок без координат лишав кнопки карт
+        # із координатами попереднього.
+        addr = self._addr_with_house_coords()
+        self.assertEqual(addr.latitude, 49.995)
+
+        addr.update_from_api({"HouseId": 31, "HouseNum": "7", "Index_": "61001"})
+        self.assertEqual(addr.house_num, "7")
+        self.assertFalse(addr.latitude, "координати попереднього будинку лишились")
+        self.assertFalse(addr.longitude)
+        # Наскрізно: рядок із кнопками карт у колонці деталей зникає.
+        values = addr._api_template_values("ua")
+        self.assertEqual(values["gd_lat"], "")
+        self.assertEqual(values["gd_long"], "")
+
+    def test_reselect_house_with_coords_applies_them(self):
+        addr = self._addr_with_house_coords()
+        addr.update_from_api({
+            "HouseId": 31, "HouseNum": "7", "Lat": "50.000000", "Long": "36.240000"})
+        self.assertEqual(addr.latitude, 50.0)
+        self.assertEqual(addr.longitude, 36.24)
+
+    def test_reselect_house_keeps_settlement_coords(self):
+        # Координати населеного пункту — рівня міста, їх скидає лише вибір міста.
+        addr = self._addr_with_house_coords()
+        addr.update_from_api({"HouseId": 31, "HouseNum": "7"})
+        self.assertEqual(addr.latitude_settlement, 49.9935)
+        self.assertEqual(addr.longitude_settlement, 36.2304)
+
+    def test_reselect_house_clears_stale_post_index(self):
+        addr = self._addr_with_house_coords()
+        self.assertEqual(addr.post_index, "61000")
+        addr.update_from_api({"HouseId": 31, "HouseNum": "7"})
+        self.assertFalse(addr.post_index, "індекс попереднього будинку лишився")
+
+    def test_street_step_clears_stale_post_index_and_coords(self):
+        # Вибір нової вулиці скидає і координати, і індекс попереднього будинку.
+        addr = self._addr_with_house_coords()
+        addr.update_from_api({"StreetId": 21, "Street": "Полтавський Шлях",
+                              "StrType": "вул."})
+        self.assertFalse(addr.post_index)
+        self.assertFalse(addr.latitude)
+        self.assertFalse(addr.house_num)
+        # Населений пункт лишається тим самим.
+        self.assertEqual(addr.city, "Харків")
+        self.assertEqual(addr.latitude_settlement, 49.9935)
