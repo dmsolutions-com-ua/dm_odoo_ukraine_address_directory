@@ -41,15 +41,20 @@ Ukrainian address autocomplete, normalization and geocoding (Odoo 19 CE).
 - No external `kw_api_connector` / `kw_widget_autocomplete` / `generic_mixin`.
 - No wizard. Address entry is inline autocomplete only.
 - UA + EN only (no Russian fetched).
+- **EN transliteration is local and always on.** `models/geodata_translit.py`
+  implements the official table of [CMU Resolution No. 55 of
+  2010-01-27](https://zakon.rada.gov.ua/laws/show/55-2010-%D0%BF), including the
+  positional variants (`Є` → `Ye`/`ie`, `Ї` → `Yi`/`i`, `Й` → `Y`/`i`,
+  `Ю` → `Yu`/`iu`, `Я` → `Ya`/`ia`), the `зг` → `zgh` digraph and the dropped
+  soft sign / apostrophe (`Знам'янка` → `Znamianka`). Every `_en` column is a
+  `compute="_compute_translit", store=True` derivative of its UA twin (mapping:
+  `_TRANSLIT_FIELDS`), so EN can never go stale, needs no API call and no
+  setting. The house suffix follows the same table
+  (`вул. Механізаторів, 14Д` → `vul. Mekhanizatoriv, 14D`).
 - **Stores everything the API returns, without exceptions.** The UA ingestion
-  (`_api_data_to_vals`) maps every documented field; the EN transliteration
-  (`fetch_en_translit`, driven by `_EN_API_KEYS`) captures **all** `_en` columns
-  — including the house-number suffix (`house_num_add_en`), settlement district
-  and old names — not a hand-picked few. A raw `api_payload` (`fields.Json`)
-  additionally keeps each response verbatim per language (`"ua"`/`"en"`, merged
-  across the city→street→house chain), so even new/undocumented keys are never
-  lost. The EN document address transliterates the house suffix too
-  (`вул. Механізаторів, 14Д` → `vul. Mekhanizatoriv, 14d`).
+  (`_api_data_to_vals`) maps every documented field, and a raw `api_payload`
+  (`fields.Json`) additionally keeps each response verbatim (merged across the
+  city→street→house chain), so even new/undocumented keys are never lost.
 - No HTTP inside `create()`/compute; ingestion happens only on selection.
 - Access token stored in `ir.config_parameter`; never logged.
 - Multi-company record rules on address and credential.
@@ -116,16 +121,49 @@ goes **right after the current type**, before the name (`селище (смт) �
   (`address_full_*`, `address_letter_*`) **always** show old names/types,
   regardless of `show_old_names`.
 
-**Placeholder naming (v19.0.2.0.0, Approach A).** Standard Odoo fields use
-**clean** names — `{city}`, `{street}`, `{zip}`, `{state}`, `{area}`,
-`{hromada}`, `{country}`, `{street2}` — and carry the **actual** address the user
-entered (from the directory *or* typed manually). Directory-only values use the
-**`gd_`** prefix — `{gd_kato}`, `{gd_metro_line}`, `{gd_city_full}`,
-`{gd_region_old}`, … The document / letter / display defaults are built from the
-**clean Odoo** placeholders, so they include manually-entered parts not yet in the
-directory. Legacy CamelCase placeholders (`{City}`, `{KATO}`, …) still resolve
-(directory values) as deprecated aliases; the `19.0.2.0.0` migration renames them
-to `gd_` in stored templates.
+**Placeholder naming (v19.0.2.0.0, Approach A).** **Clean** names — `{city}`,
+`{street}`, `{zip}`, `{state}`, `{area}`, `{hromada}`, `{country}`, `{street2}`
+— carry the **owner's actual** address (from the directory *or* typed manually).
+Directory-only values use the **`gd_`** prefix — `{gd_kato}`, `{gd_metro_line}`,
+`{gd_city_full}`, `{gd_region_old}`, … The distinction is the **source of the
+value**, not who declared the field. Most clean names are standard Odoo columns;
+`area` / `hromada` are owner columns *this module adds* (plain `fields.Char` on
+`dm.geodata.address.mixin`, merged into `res.partner` & co. via `_inherit`, so
+they are real DB columns, not view-only widgets). The document / letter / display
+defaults are built from the **clean** placeholders, so they include
+manually-entered parts not yet in the directory. Legacy CamelCase placeholders
+(`{City}`, `{KATO}`, …) still resolve (directory values) as deprecated aliases;
+the `19.0.2.0.0` migration renames them to `gd_` in stored templates.
+
+Two consequences worth spelling out, because clean and `gd_` are easy to confuse:
+
+- **`{area}` ≠ `{gd_area}`.** The owner column stores the *rendered*
+  `block_format_area` template (default `{gd_area} ({gd_area_old})`), written by
+  `to_address_values()`, and it survives `_geodata_detach()`. So `{area}` may be
+  `Личаківський р-н (Старий р-н)` while `{gd_area}` is the raw
+  `Личаківський р-н` — or the owner may still hold a value after the directory
+  link is gone. Same for `{hromada}` vs `{gd_hromada_full}`.
+- **`{state}` and `{country}` come from Odoo reference records** — `state_id.name`
+  and `country_id.name`, never from a literal. `res.country.name` is translatable,
+  so `_country_name()` reads it in the *address* language (`ua` → `uk_UA`,
+  `en` → `en_US`), not the user's, and falls back to `base.ua`. If an envelope
+  needs the postal all-caps form, type `УКРАЇНА` as free text in the template —
+  the engine preserves literals.
+
+For the region there are three distinct values in play: `{Region}` / `{gd_region}`
+(raw API string, `Львівська обл.`), `{state}` on the owner side
+(`state_id.name`, `Львівська`), and `{state}` on the directory side (a
+*normalised string*, not a record — resolving `res.country.state` per record
+inside a stored compute would cost a query per row, AUDIT #7).
+
+**Two value dictionaries, one engine.** `_render_values` is fed either by
+`dm.geodata.address.mixin._geodata_doc_values` (owner side: clean + `gd_` +
+legacy CamelCase, owner-first via `pick()`) or by
+`dm.geodata.address._api_template_values` (directory side). The directory has no
+owner, so `_clean_values` derives every clean name from the directory value —
+exactly the `pick()` branch taken when the owner field is empty. Without it the
+shipped clean-name defaults would render this model's `address_display`,
+`address_full_*` and `address_letter_*` almost empty.
 
 **Template model (document/letter).** A template is an ordered list of
 placeholders; non-empty segments are joined with **commas**. Directory composites
@@ -145,12 +183,12 @@ present, `CityOld` reflects an old **administrative subordination** (not a
 rename) and is suppressed everywhere — in the City field, in the `{city}`
 parentheses and in the bare `{city_old}` placeholder.
 
-Full **EN transliteration** of old names requires the `*_old_en` columns
+Full **EN transliteration** of old names lives in the `*_old_en` columns
 (`region_old_en`, `area_old_en`, `hromada_old_en`, `settlement_type_old_en`,
-`city_old_en`, `str_type_old_en`, `street_old_en`), captured from the API by
-`_EN_API_KEYS` / `fetch_en_translit`. On the contact form the **EN** document /
-letter address fields are **always shown** (their content is still governed by
-*Store English Transliteration*).
+`city_old_en`, `str_type_old_en`, `street_old_en`) — computed from their UA
+twins like every other `_en` column. On the contact form the **EN** document /
+letter address fields are always shown and always filled; manually typed
+segments are transliterated on render, so an EN address never mixes scripts.
 
 ## Address block field order
 Odoo's web renderer rearranges the standard `.o_address_format` fields by the

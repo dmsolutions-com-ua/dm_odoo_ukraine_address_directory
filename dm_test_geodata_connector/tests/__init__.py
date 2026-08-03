@@ -7,6 +7,7 @@ from . import test_autocomplete_chain
 from . import test_address_fields
 from . import test_address_sync
 from . import test_address_ownership
+from . import test_translit_rules
 from . import test_translit
 from . import test_translit_consistency
 from . import test_old_names_reset

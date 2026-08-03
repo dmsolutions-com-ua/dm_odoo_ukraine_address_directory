@@ -77,10 +77,6 @@ class GeodataApiCredential(models.Model):
         string="Username", required=True, groups="base.group_system")
     api_password = fields.Char(
         string="Password", required=True, groups="base.group_system")
-    store_english = fields.Boolean(
-        string="Store English Transliteration",
-        default=False,
-    )
     # Шаблони адрес (документи/конверти/рядок картки): дефолти — на СТАНДАРТНИХ
     # полях Odoo (чисті імена = фактична адреса власника). Довідникове збагачення
     # доступне як `gd_*` (напр. {gd_kato}, {gd_city_district}, {gd_region_old}).
