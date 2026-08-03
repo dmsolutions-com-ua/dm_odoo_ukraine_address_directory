@@ -686,21 +686,22 @@ class GeodataAddressMixin(models.AbstractModel):
 
         street_field = fmap["street"]
         if street_field in vals and self._norm(vals[street_field]) != self._norm(expected.get("street")):
+            # Що саме належить рівню — беремо з ТИХ САМИХ списків, якими живе
+            # ланцюг підказок (_HOUSE_RESET / _CLEAR_BELOW_STREET). Виписані
+            # руками набори тут уже розійшлися з ними одного разу: ручна правка
+            # номера чистила координати, але лишала метро, район міста й індекс
+            # від попереднього будинку. Руками лишається тільки ІДЕНТИЧНІСТЬ
+            # рівня — те, чого в списках «нижче рівня» немає за визначенням.
+            # EN-відповідники (street_en/str_type_en/house_num_add_en) чистити не
+            # треба: вони computed від цих же UA-полів і зникають разом з ними.
             if self._is_house_only_change(geo, vals[street_field]):
-                geo.write({
-                    "house_ref": False, "house_num": False, "house_num_add": False,
-                    "house_string": False,
-                    "latitude": 0.0, "longitude": 0.0,
-                })
+                clear = dict(geo._blank_values(geo._HOUSE_RESET),
+                             house_ref=False, house_num=False)
             else:
-                # EN-відповідники (street_en/str_type_en/house_num_add_en) чистити
-                # не треба: вони computed від цих же UA-полів і зникають разом з ними.
-                geo.write({
-                    "street_ref": False, "house_ref": False, "street": False,
-                    "str_type": False, "street_string": False, "house_num": False,
-                    "house_num_add": False, "house_string": False,
-                    "latitude": 0.0, "longitude": 0.0,
-                })
+                clear = dict(geo._blank_values(geo._CLEAR_BELOW_STREET),
+                             street_ref=False, street=False, str_type=False,
+                             street_string=False)
+            geo.write(clear)
 
     @staticmethod
     def _is_house_only_change(geo, new_street):

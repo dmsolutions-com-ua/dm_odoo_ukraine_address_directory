@@ -19,6 +19,8 @@ export class GeodataAutocompleteField extends Component {
         options: { type: Object, optional: true },
         placeholder: { type: String, optional: true },
     };
+    // Кінцевий токен номера будинку в полі вулиці (див. hasHouseNumber).
+    static HOUSE_TAIL_RE = /[,\s]+\d[^\s,]*\s*$/;
 
     setup() {
         this.orm = useService("orm");
@@ -144,7 +146,11 @@ export class GeodataAutocompleteField extends Component {
     // Окремий сигнал для БУДИНКУ: вулиця звірена з довідником, але номер будинку
     // (що ділить те саме поле вулиці) введено вручну — тобто його немає в
     // еталонному довіднику. Показується лише коли сама вулиця вже підтверджена
-    // (щоб не дублювати амбер-індикатор ручної вулиці isManual).
+    // (щоб не дублювати амбер-індикатор ручної вулиці isManual) І коли номер
+    // узагалі є: для міста/вулиці роль такої перевірки грає `this.value`, але
+    // тут воно означає ВСЕ поле вулиці, тож без окремої перевірки підказка
+    // спрацьовувала «в порожнечу» — одразу після вибору вулиці з підказки або
+    // після витирання номера.
     get houseManual() {
         const data = this.props.record.data;
         const houseField = this.options.house_verified_field;
@@ -155,7 +161,15 @@ export class GeodataAutocompleteField extends Component {
         const hintOn = !this.options.hint_field || data[this.options.hint_field];
         const strictUa = data.country_code === "UA";
         const streetVerified = Boolean(data[verifiedField]);
-        return Boolean(strictUa && hintOn && this.value && streetVerified && !data[houseField]);
+        return Boolean(strictUa && hintOn && this.hasHouseNumber
+                       && streetVerified && !data[houseField]);
+    }
+
+    // Чи несе поле вулиці кінцевий номер будинку: "вул. Х, 12А" -> так,
+    // "вул. Х" -> ні. Дзеркалить серверний _HOUSE_TAIL_RE; клас [^\s,] замість
+    // \w, бо JS-\w не покриває кирилицю ("12А").
+    get hasHouseNumber() {
+        return GeodataAutocompleteField.HOUSE_TAIL_RE.test(this.value || "");
     }
 
     get houseHintTitle() {

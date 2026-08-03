@@ -912,6 +912,18 @@ class GeodataAddress(models.Model):
                     "city_district", "city_district_ru",
                     "metro_station", "metro_line", "metro_distance")
 
+    @api.model
+    def _blank_values(self, field_names):
+        """`{field: empty value}` for a level reset — `0.0` for Float, `False`
+        otherwise.
+
+        Single place that knows HOW to blank a field, so every consumer of the
+        level lists above (API ingestion here, the manual-edit sync in
+        `dm.geodata.address.mixin`) clears them identically.
+        """
+        return {name: (0.0 if self._fields[name].type == "float" else False)
+                for name in field_names}
+
     @staticmethod
     def _api_level(api_data):
         """Hierarchy level carried by a payload: 'house' / 'street' / 'city'."""
@@ -942,9 +954,8 @@ class GeodataAddress(models.Model):
         def _reset(fields):
             # setdefault: payload має пріоритет — якщо ключ у відповіді був,
             # _api_data_to_vals його вже поклав і скидання не спрацює.
-            for fname in fields:
-                vals.setdefault(
-                    fname, 0.0 if fname in ("latitude", "longitude") else False)
+            for fname, empty in self._blank_values(fields).items():
+                vals.setdefault(fname, empty)
         if get("City"):
             _reset(self._SETTLEMENT_RESET)
         if get("Street"):
@@ -957,9 +968,9 @@ class GeodataAddress(models.Model):
             clear = self._CLEAR_BELOW_CITY
         elif level == "street":
             clear = self._CLEAR_BELOW_STREET
-        for fname in clear:
+        for fname, empty in self._blank_values(clear).items():
             if fname not in vals:
-                vals[fname] = 0.0 if fname in ("latitude", "longitude") else False
+                vals[fname] = empty
         if vals:
             self.write(vals)
         self._merge_raw(api_data, "ua")

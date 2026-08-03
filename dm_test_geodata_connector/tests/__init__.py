@@ -2,6 +2,7 @@ from . import test_address_format
 from . import test_ingestion_dedup
 from . import test_query_normalize
 from . import test_clearing_ux
+from . import test_manual_edit_cleanup
 from . import test_country_level
 from . import test_security
 from . import test_autocomplete_chain
