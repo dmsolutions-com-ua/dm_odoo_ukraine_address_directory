@@ -50,8 +50,11 @@ class GeodataAddress(models.Model):
     }
 
     name = fields.Char(compute="_compute_name", store=True)
+    # Нормалізований рядок адреси (він же запит до API). Лейбл навмисно НЕ «Full
+    # Address» — так називається address_display; два однакові лейбли на одній
+    # моделі неможливо розрізнити у фільтрах/експорті й дають warning при оновленні.
     address_string = fields.Char(
-        string="Full Address", compute="_compute_address_string", store=True
+        string="Address String", compute="_compute_address_string", store=True
     )
     company_id = fields.Many2one(
         comodel_name="res.company",
