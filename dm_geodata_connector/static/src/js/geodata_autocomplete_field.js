@@ -368,6 +368,14 @@ export class GeodataAutocompleteField extends Component {
                 } else {
                     vals[key] = { id: val };
                 }
+            } else if (fieldDef && ["char", "text"].includes(fieldDef.type)) {
+                // Той самий клас проблеми, що й вище: порожній Char сервер шле як
+                // False (так ORM його очищає), але в пам'яті веб-клієнта Char —
+                // рядок. record.update() кладе значення сирим (_applyChanges не
+                // проганяє клієнтські зміни через parseServerValue), тож readonly-
+                // поле відрендерило б текст "false" — саме це видно на Районі й
+                // Громаді при виборі міста спецстатусу (Київ).
+                vals[key] = val === false ? "" : val;
             } else {
                 vals[key] = val;
             }
