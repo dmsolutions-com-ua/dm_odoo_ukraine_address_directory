@@ -2,7 +2,7 @@
 
 [![Odoo](https://img.shields.io/badge/Odoo-18.0-714B67)](https://www.odoo.com)
 [![License: LGPL-3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-154%20passing-brightgreen)](dm_test_geodata_connector)
+[![Tests](https://img.shields.io/badge/tests-158%20passing-brightgreen)](dm_test_geodata_connector)
 
 Самодостатня інтеграція з API **[Geodata.online](https://geodata.online)** для
 автозаповнення, нормалізації та геокодування українських адрес безпосередньо на
