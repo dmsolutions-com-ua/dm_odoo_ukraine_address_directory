@@ -151,7 +151,10 @@ Two consequences worth spelling out, because clean and `gd_` are easy to confuse
 - **`{state}` and `{country}` come from Odoo reference records** — `state_id.name`
   and `country_id.name`, never from a literal. `res.country.name` is translatable,
   so `_country_name()` reads it in the *address* language (`ua` → `uk_UA`,
-  `en` → `en_US`), not the user's, and falls back to `base.ua`. If an envelope
+  `en` → `en_US`), not the user's, and falls back to `base.ua`. The language
+  context is applied only if that language is **activated** in the database —
+  Odoo ≥ 17 raises `Invalid language code` otherwise — so on an EN-only database
+  the field is read as-is, with Ukraine keeping its Ukrainian name. If an envelope
   needs the postal all-caps form, type `УКРАЇНА` as free text in the template —
   the engine preserves literals.
 

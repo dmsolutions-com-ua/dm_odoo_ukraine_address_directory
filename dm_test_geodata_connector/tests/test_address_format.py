@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from odoo.tests.common import TransactionCase
 
 
@@ -27,8 +29,21 @@ class TestAddressFormat(TransactionCase):
         # очікування будуємо з того самого джерела, а не з літерала (інакше тест
         # червонітиме на БД без встановленої української локалі).
         ukraine = cls.env.ref("base.ua")
-        cls.ua_name = ukraine.with_context(lang="uk_UA").name
+        cls.ua_name = cls._expected_country_name(ukraine, "uk_UA")
         cls.en_name = ukraine.with_context(lang="en_US").name
+
+    @classmethod
+    def _expected_country_name(cls, country, lang_code):
+        """Очікувана назва країни для мови адреси.
+
+        Підміняти `lang` можна лише активною мовою — Odoo 18 інакше кидає
+        «Invalid language code». На базі без української модуль віддає власний
+        відкат для України (див. `dm.geodata.address._country_name`).
+        """
+        installed = {c for c, _name in cls.env["res.lang"].get_installed()}
+        if lang_code in installed:
+            return country.with_context(lang=lang_code).name
+        return "Україна" if country.code == "UA" else country.name
 
     # --- Дефолтний документний шаблон (сирий) ---------------------------------
     def test_default_document_raw_ua(self):
@@ -74,8 +89,24 @@ class TestAddressFormat(TransactionCase):
             "city": "Warszawa", "street": "Marszalkowska 1",
         })
         vals = partner._geodata_doc_values("ua")
-        self.assertEqual(vals["country"], poland.with_context(lang="uk_UA").name)
+        self.assertEqual(vals["country"], self._expected_country_name(poland, "uk_UA"))
         self.assertNotEqual(vals["country"], self.ua_name)
+
+    def test_country_survives_inactive_address_language(self):
+        """Мова адреси, не активована в базі, не мусить ламати рендер.
+
+        Odoo 18 кидає UserError «Invalid language code: uk_UA» на
+        `with_context(lang=…)` з неактивною мовою — на англомовній базі це
+        валило застосування підказки (to_address_values -> {country}).
+        """
+        Geo = self.env["dm.geodata.address"]
+        with patch.dict(Geo._LANG_CODES, {"ua": "zz_ZZ"}):
+            self.assertIsNone(Geo._active_lang_code("ua"))
+            # Україна лишається українською навіть без встановленої локалі.
+            self.assertEqual(Geo._country_name("ua"), "Україна")
+            self.assertEqual(
+                self.address._render_api_template("{country}", "ua"), "Україна")
+            self.assertTrue(self.address.to_address_values()["city"])
 
     def test_country_falls_back_to_ukraine_when_owner_has_none(self):
         partner = self.env["res.partner"].create({
