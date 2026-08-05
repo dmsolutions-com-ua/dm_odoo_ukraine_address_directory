@@ -154,7 +154,10 @@ class TestDocumentsActualAddress(TransactionCase):
             "city": "Ніжин", "street": "вул. Миру, 3",
         })
         before = partner.geodata_address_full_ua or ""
-        self.assertIn(self.ukraine.with_context(lang="uk_UA").name, before)
+        # Назва країни залежить від того, чи активна українська в цій базі
+        # (див. `_active_lang_code`), тож беремо її з того самого джерела.
+        self.assertIn(
+            self.env["dm.geodata.address"]._country_name("ua", self.ukraine), before)
         self.assertIn("Ніжин", before)
 
         partner.country_id = self.env.ref("base.pl")

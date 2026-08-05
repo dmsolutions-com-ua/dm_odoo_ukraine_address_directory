@@ -540,6 +540,27 @@ class GeodataAddress(models.Model):
     # Мова адреси (наш перемикач ua/en) -> код мови Odoo. Потрібен, бо
     # `res.country.name` — перекладне поле.
     _LANG_CODES = {"ua": "uk_UA", "en": "en_US"}
+    # Відкат назви країни, коли потрібної мови немає в базі (див.
+    # `_active_lang_code`). Модуль — суто про Україну, тож саме її назва мусить
+    # лишатися українською і в англомовній базі; решта країн віддається як є.
+    _COUNTRY_NAME_UA = {"UA": "Україна"}
+
+    @api.model
+    def _active_lang_code(self, lang="ua"):
+        """Код мови Odoo для нашого перемикача ua/en — або None, якщо мову не
+        активовано в цій базі.
+
+        Odoo 18 кидає UserError «Invalid language code: uk_UA» на
+        `with_context(lang=…)` з неактивною мовою (`Environment.lang`,
+        odoo/api.py). Українська може бути не встановлена (типова англомовна
+        база), тож перекладні поля в такому разі читаємо без підміни контексту.
+        `en_US` — базова мова, вона є завжди.
+        """
+        code = self._LANG_CODES.get(lang, "en_US")
+        if code == "en_US":
+            return code
+        installed = {c for c, _name in self.env["res.lang"].sudo().get_installed()}
+        return code if code in installed else None
 
     @api.model
     def _country_name(self, lang="ua", country=None):
@@ -549,12 +570,19 @@ class GeodataAddress(models.Model):
         language rather than the user's - otherwise an EN document would render
         the country in Ukrainian. Falls back to Ukraine: the directory model has
         no owner to ask, and the module covers Ukraine only.
+
+        When the address language is not activated in this database, the field is
+        read as-is (base value) - except for Ukraine, which keeps its Ukrainian
+        name in UA output.
         """
         country = country or self.env.ref("base.ua", raise_if_not_found=False)
         if not country:
             return ""
-        lang_code = self._LANG_CODES.get(lang, "en_US")
-        return country.with_context(lang=lang_code).name or ""
+        lang_code = self._active_lang_code(lang)
+        if lang_code:
+            return country.with_context(lang=lang_code).name or ""
+        fallback = self._COUNTRY_NAME_UA.get(country.code or "")
+        return fallback or country.name or ""
 
     @api.model
     def _clean_values(self, values):
