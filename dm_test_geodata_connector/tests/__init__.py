@@ -20,3 +20,4 @@ from . import test_documents_actual_address
 from . import test_perf_settings
 from . import test_user_agent
 from . import test_update_check
+from . import test_new_record_defaults

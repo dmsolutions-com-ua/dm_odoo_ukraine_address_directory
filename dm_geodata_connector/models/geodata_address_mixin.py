@@ -42,11 +42,21 @@ class GeodataAddressMixin(models.AbstractModel):
     # Однорядкове поле пошуку адреси на вкладці «Адресна інформація» (test #9).
     geodata_search = fields.Char(string="Search Address", store=False)
 
+    # `default` тут не дублювання compute, а єдиний спосіб дати цим полям
+    # правильне значення на формі НОВОГО запису: клієнт наповнює її першим
+    # `onchange`, а той засіває КОЖНЕ поле форми без `default` значенням False
+    # прямо в кеш нового запису (web/models/models.py, гілка `first_call`).
+    # Обчислюване поле без @api.depends після цього вже ніколи не
+    # перераховується — тож без default на новій картці показувався банер
+    # «Geodata.online not configured» попри налаштований credential, а підказка
+    # про ручний ввід мовчала.
     has_geodata_credential = fields.Boolean(
-        compute="_compute_geodata_settings", compute_sudo=True
+        compute="_compute_geodata_settings", compute_sudo=True,
+        default=lambda self: bool(self._geodata_credential()),
     )
     geodata_show_manual_hint = fields.Boolean(
-        compute="_compute_geodata_settings", compute_sudo=True
+        compute="_compute_geodata_settings", compute_sudo=True,
+        default=lambda self: self._geodata_default_manual_hint(),
     )
     # Рівень валідації (з посилань пов'язаної адреси): які рівні взято з довідника
     # (підказок). Керує індикатором введених вручну даних (червона рамка).
@@ -105,8 +115,15 @@ class GeodataAddressMixin(models.AbstractModel):
         "area": "area", "hromada": "hromada",
     }
 
+    @api.model
+    def _geodata_default_manual_hint(self):
+        """Показувати підказку про ручний ввід, поки адміністратор не вимкнув її
+        на credential; без credential — теж показуємо (нема кому вимикати)."""
+        credential = self._geodata_credential()
+        return credential.show_manual_hint if credential else True
+
     def _compute_geodata_settings(self):
-        credential = self.env["dm.geodata.api.credential"].sudo().get_credential()
+        credential = self._geodata_credential()
         has = bool(credential)
         hint = credential.show_manual_hint if credential else True
         for rec in self:
