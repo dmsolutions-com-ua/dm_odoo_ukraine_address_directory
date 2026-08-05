@@ -19,7 +19,9 @@ class TestSecurity(TransactionCase):
         cls.user = cls.env["res.users"].create({
             "name": "Plain Internal",
             "login": "geo_plain_user",
-            "group_ids": [(6, 0, [cls.env.ref("base.group_user").id])],
+            # В Odoo 18 поле груп користувача зветься `groups_id`
+            # (перейменування на `group_ids` — лише в серії 19).
+            "groups_id": [(6, 0, [cls.env.ref("base.group_user").id])],
         })
 
     def test_company_rules_exist(self):
