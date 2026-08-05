@@ -1,6 +1,6 @@
-# Адресний довідник України для Odoo 19
+# Адресний довідник України для Odoo 18
 
-[![Odoo](https://img.shields.io/badge/Odoo-19.0-714B67)](https://www.odoo.com)
+[![Odoo](https://img.shields.io/badge/Odoo-18.0-714B67)](https://www.odoo.com)
 [![License: LGPL-3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-153%20passing-brightgreen)](dm_test_geodata_connector)
 
@@ -58,7 +58,7 @@
 > ним; `crm`/`hr`/`lunch` знімаються разом із парасолькою `dm_geodata_online`.
 
 ## Вимоги
-Odoo 19.0 Community, Python 3.10+, PostgreSQL, Python-пакет `requests`.
+Odoo 18.0 Community, Python 3.10+, PostgreSQL, Python-пакет `requests`.
 
 ## Встановлення
 ```bash
@@ -74,9 +74,15 @@ odoo-bin -d <db> -i dm_test_geodata_connector --test-enable --stop-after-init
 Після встановлення задайте облікові дані API у **Налаштування → Geodata.online**.
 
 ## Гілки
-- `main` — основна гілка розробки.
-- `19.0` — гілка серії Odoo для публікації в [Odoo Apps Store](https://apps.odoo.com)
+- `main` — основна гілка розробки (серія Odoo 19).
+- `19.0` — гілка серії Odoo 19 для публікації в [Odoo Apps Store](https://apps.odoo.com)
   (підключення репозиторію через `#19.0`).
+- `18.0` — **ця гілка**: та сама функціональність для Odoo 18 (публікація через `#18.0`).
+
+> Гілки 18.0 і 19.0 тримаються структурно ідентичними: різниця обмежена тим, що
+> справді розійшлося між серіями Odoo (`_sql_constraints` замість `models.Constraint`,
+> `res.groups.users` замість `user_ids`, форма many2one `[id, display_name]` у
+> веб-клієнті) плюс метадані серії. Це дозволяє переносити фікси cherry-pick'ом.
 
 ## Документація
 Технічні матеріали — у теці [`doc/`](doc/): опис API та приклади

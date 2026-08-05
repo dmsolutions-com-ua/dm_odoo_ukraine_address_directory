@@ -4,7 +4,7 @@ Adds Geodata.online address autocomplete to the **employee private (home) addres
 (`hr.employee`, *Private Information* tab).
 
 - `hr.employee` inherits `dm.geodata.address.mixin`. The employee keeps its home
-  address on its own `private_*` columns (no `res.partner` delegation in Odoo 19),
+  address on its own `private_*` columns (plain columns in Odoo 18, no delegation),
   so the module overrides `_geodata_fields` to map the logical address levels onto
   those names:
   `country_id → private_country_id`, `state_id → private_state_id`,

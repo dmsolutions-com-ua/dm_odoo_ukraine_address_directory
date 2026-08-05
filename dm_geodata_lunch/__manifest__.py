@@ -7,7 +7,7 @@
     "website": "https://geodata.online",
     "category": "Extra Tools",
     "license": "LGPL-3",
-    "version": "19.0.1.2.0",
+    "version": "18.0.1.2.0",
     # Обкладинка модуля в Apps Store (без цього ключа магазин показує лише іконку).
     "images": ["static/description/cover.png"],
     # Auto-install bridge: підключається, коли встановлено й парасольку

@@ -40,8 +40,8 @@
 
     // Видиме підсвічування для hover ТА навігації з клавіатури (активний елемент
     // має `focus`). Odoo НЕ видає CSS-змінні Bootstrap `--bs-dropdown-*`, тож
-    // використовуємо Sass-змінні часу компіляції — саме те, що core-автопідказка
-    // використовує для `a.ui-state-active` (web/.../autocomplete.scss).
+    // використовуємо Sass-змінні часу компіляції — саме те, що core використовує
+    // для `a.ui-state-active` (web/static/src/legacy/scss/dropdown.scss).
     .o_geodata_suggestions__item:hover,
     .o_geodata_suggestions__item.focus {
         color: $dropdown-link-hover-color;

@@ -5,10 +5,10 @@ class HrEmployee(models.Model):
     _name = "hr.employee"
     _inherit = ["hr.employee", "dm.geodata.address.mixin"]
 
-    # hr.employee тримає домашню адресу у власних колонках `private_*` (без
-    # делегування на res.partner в Odoo 19), тож загальну логіку міксина на боці
-    # власника спрямовуємо на ці імена полів через мапу нижче. area/hromada —
-    # власні (стандартні) поля міксина.
+    # hr.employee в Odoo 18 тримає домашню адресу у власних колонках `private_*`
+    # (без делегування), тож загальну логіку міксина на боці власника спрямовуємо
+    # на ці імена полів через мапу нижче. area/hromada — власні (стандартні)
+    # поля міксина.
     _geodata_fields = {
         "country_id": "private_country_id",
         "state_id": "private_state_id",

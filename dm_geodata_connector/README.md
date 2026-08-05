@@ -1,7 +1,7 @@
 # Ukraine Address — Geodata.online Connector (dm_geodata_connector)
 
 Core module: self-contained integration with the **Geodata.online** API for
-Ukrainian address autocomplete, normalization and geocoding (Odoo 19 CE).
+Ukrainian address autocomplete, normalization and geocoding (Odoo 18 CE).
 
 ## What it provides
 - `dm.geodata.address` — normalized address storage (UA + EN), document/letter
@@ -126,7 +126,7 @@ goes **right after the current type**, before the name (`селище (смт) �
   (`address_full_*`, `address_letter_*`) **always** show old names/types,
   regardless of `show_old_names`.
 
-**Placeholder naming (v19.0.2.0.0, Approach A).** **Clean** names — `{city}`,
+**Placeholder naming (Approach A).** **Clean** names — `{city}`,
 `{street}`, `{zip}`, `{state}`, `{area}`, `{hromada}`, `{country}`, `{street2}`
 — carry the **owner's actual** address (from the directory *or* typed manually).
 Directory-only values use the **`gd_`** prefix — `{gd_kato}`, `{gd_metro_line}`,
@@ -137,8 +137,7 @@ value**, not who declared the field. Most clean names are standard Odoo columns;
 they are real DB columns, not view-only widgets). The document / letter / display
 defaults are built from the **clean** placeholders, so they include
 manually-entered parts not yet in the directory. Legacy CamelCase placeholders
-(`{City}`, `{KATO}`, …) still resolve (directory values) as deprecated aliases;
-the `19.0.2.0.0` migration renames them to `gd_` in stored templates.
+(`{City}`, `{KATO}`, …) still resolve (directory values) as deprecated aliases.
 
 Two consequences worth spelling out, because clean and `gd_` are easy to confuse:
 
@@ -306,7 +305,7 @@ published, so admins on self-hosted / Odoo.sh know to upgrade.
 
 - **What it checks** (`_check_connector_update`): GETs the core `__manifest__.py`
   from the GitHub branch the store publishes from
-  (`raw.githubusercontent.com/.../19.0/dm_geodata_connector/__manifest__.py`),
+  (`raw.githubusercontent.com/.../18.0/dm_geodata_connector/__manifest__.py`),
   reads its `version` and compares it with the installed one.
 - **Privacy**: it is a plain GET of a public file — **nothing about this system is
   sent** (only the client IP is visible to GitHub); the comparison is local. The

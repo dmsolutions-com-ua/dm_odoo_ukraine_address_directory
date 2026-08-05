@@ -1,6 +1,6 @@
 # Ukraine Address Integration - Contacts (dm_geodata_contact)
 
-Adds inline Geodata.online address autocomplete to **res.partner** (Odoo 19 CE).
+Adds inline Geodata.online address autocomplete to **res.partner** (Odoo 18 CE).
 
 - City / Street fields use the `geodata_autocomplete` widget from
   `dm_geodata_connector` (debounce, min_chars, keyboard nav, themed content-width

@@ -360,13 +360,19 @@ export class GeodataAutocompleteField extends Component {
             // private_state_id (hr.employee), country/state (res.bank) тощо.
             const fieldDef = this.props.record.fields[key];
             if (fieldDef && fieldDef.type === "many2one") {
-                // У пам'яті значення many2one в Odoo 19 — це { id, display_name }.
+                // У пам'яті значення many2one в Odoo 18 — це пара [id, display_name].
+                // Сервер віддає або голий id (state_id/country_id з
+                // to_address_values), або словник {id, display_name}
+                // (geodata_address_id) — нормалізуємо обидві форми до пари.
+                // Передача словника тут мовчки очистила б поле: record.update ->
+                // _completeMany2OneValue читає value[0]/value[1].
                 if (!val) {
                     vals[key] = false;
                 } else if (typeof val === "object") {
-                    vals[key] = val;
+                    vals[key] = [val.id, val.display_name || ""];
                 } else {
-                    vals[key] = { id: val };
+                    // Без display_name — веб-клієнт дорезолвить його через web_read.
+                    vals[key] = [val];
                 }
             } else {
                 vals[key] = val;

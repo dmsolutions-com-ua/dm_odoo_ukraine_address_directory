@@ -35,7 +35,7 @@ class GeodataAddressMixin(models.AbstractModel):
     # форми, не додаючи колонок до res.partner. Довговічна копія живе на
     # dm.geodata.address (city_moniker/street_moniker), зчитується через
     # _linked_moniker(). Збереження їх додало б колонки res.partner, що валять
-    # country pre-check веб-«Upgrade» Odoo 19 (він префетчить усі збережені поля
+    # country pre-check веб-«Upgrade» (він префетчить усі збережені поля
     # партнера до _auto_init).
     geodata_city_moniker = fields.Char(store=False)
     geodata_street_moniker = fields.Char(store=False)

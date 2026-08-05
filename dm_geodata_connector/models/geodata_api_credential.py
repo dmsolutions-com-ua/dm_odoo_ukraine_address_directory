@@ -22,12 +22,12 @@ _EMPTY_RESULT_MESSAGES = frozenset(
 )
 _MONIKER_EXPIRED = "Moniker expired"
 
-# Перевірка оновлень: звіряємо version у маніфесті ядра на гілці магазину 19.0
+# Перевірка оновлень: звіряємо version у маніфесті ядра на гілці магазину 18.0
 # (саме з неї публікується Apps Store). Лише GET публічного файлу — про клієнта
 # нічого не передається, порівняння локальне.
 _UPDATE_MANIFEST_URL = (
     "https://raw.githubusercontent.com/dmsolutions-com-ua/"
-    "dm_odoo_ukraine_address_directory/19.0/dm_geodata_connector/__manifest__.py"
+    "dm_odoo_ukraine_address_directory/18.0/dm_geodata_connector/__manifest__.py"
 )
 _UPDATE_PARAM_ENABLED = "geodata.update_check_enabled"
 _UPDATE_PARAM_URL = "geodata.update_check_url"
@@ -41,11 +41,9 @@ class GeodataApiCredential(models.Model):
     _description = "Geodata API Credential"
     _order = "id desc"
 
-    # Odoo 19: застарілий список `_sql_constraints` ігнорується -> models.Constraint.
-    _name_uniq = models.Constraint(
-        "UNIQUE (name)",
-        "Credential name must be unique.",
-    )
+    _sql_constraints = [
+        ("name_uniq", "UNIQUE (name)", "Credential name must be unique."),
+    ]
 
     # Дефолтний шаблон документної адреси. Плейсхолдери — СТАНДАРТНІ поля Odoo
     # (чисті імена: {city}/{street}/{zip}/{state}/{area}/{hromada}/{country}) —
@@ -188,7 +186,7 @@ class GeodataApiCredential(models.Model):
         compute="_compute_update_check_enabled",
         inverse="_inverse_update_check_enabled",
         help="Daily compare the installed connector version with the published "
-        "version on GitHub (branch 19.0) and notify managers when a newer one "
+        "version on GitHub (branch 18.0) and notify managers when a newer one "
         "exists. Only a GET of a public file — nothing about this system is sent.",
     )
     update_available = fields.Boolean(
@@ -506,7 +504,7 @@ class GeodataApiCredential(models.Model):
         managers = self.env.ref(
             "dm_geodata_connector.group_geodata_manager", raise_if_not_found=False
         )
-        users = managers.user_ids if managers else self.env["res.users"]
+        users = managers.users if managers else self.env["res.users"]
         if company:
             users = users.filtered(lambda u: company.id in u.company_ids.ids)
         return users.partner_id
@@ -619,7 +617,7 @@ class GeodataApiCredential(models.Model):
 
     @api.model
     def _fetch_latest_published_version(self):
-        """GET маніфесту ядра на гілці 19.0 і повернути version (або None).
+        """GET маніфесту ядра на гілці 18.0 і повернути version (або None).
         Не-фатально й винесено окремо, щоб тести мокали без мережі."""
         url = self.env["ir.config_parameter"].sudo().get_param(
             _UPDATE_PARAM_URL) or _UPDATE_MANIFEST_URL
