@@ -754,12 +754,29 @@ class GeodataAddressMixin(models.AbstractModel):
         form carries it, otherwise fall back to `country_id` pointing at Ukraine.
         The address block always loads `country_id`, while a related
         `country_code` field is not reliably loaded into the form record on some
-        models (e.g. crm.lead / res.company)."""
+        models (e.g. crm.lead / res.company).
+
+        ПОРОЖНЯ країна — окремий випадок, а не «не Україна»: `res.partner`
+        підставляє Україну через `default_get`, а `crm.lead` (і будь-який
+        власник, створений з аліаса/імпорту) лишає поле порожнім. Строга
+        відповідь False там означала б, що на новій нагоді підказки мовчать
+        без жодного пояснення, доки користувач вручну не обере країну. Тож
+        порожню країну трактуємо за країною КОМПАНІЇ: на українській компанії
+        пошук дозволено (обрана підказка сама проставить country_id = Україна
+        через `to_address_values`), на іноземній — ні. Явно вказана іноземна
+        країна лишається забороною за будь-якої компанії.
+        """
         dep = dep or {}
         if dep.get("country_code") == "UA":
             return True
         ukraine = self.env.ref("base.ua", raise_if_not_found=False)
-        return bool(ukraine and dep.get("country_id") == ukraine.id)
+        if not ukraine:
+            return False
+        if dep.get("country_id") == ukraine.id:
+            return True
+        if dep.get("country_code") or dep.get("country_id"):
+            return False  # країна вказана і вона не Україна
+        return self.env.company.country_id.id == ukraine.id
 
     # ------------------------------------------------------------------
     # Точки входу автопідказки (викликаються з OWL-віджета через RPC).
