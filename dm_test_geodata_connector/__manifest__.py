@@ -5,7 +5,7 @@
     "website": "https://geodata.online",
     "category": "Hidden",
     "license": "LGPL-3",
-    "version": "18.0.1.3.6",
+    "version": "18.0.1.3.7",
     "depends": [
         "dm_geodata_connector",
         "dm_geodata_contact",
