@@ -1,13 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
+    <!-- УВАГА: стандартна форма crm.lead містить ДВА адресні блоки
+         div.o_address_format, і показується завжди рівно один з них:
+           * group[@name='lead_partner'] — видимий на ЛІДІ (invisible при
+             type == 'opportunity');
+           * page[@name='lead'] («Extra Information» у 18.0, «Contacts» у 19.0)
+             — видимий на НАГОДІ (invisible при type == 'lead').
+         Оскільки Odoo (`locate_node`) бере лише ПЕРШИЙ збіг xpath, спільний
+         вираз //div[hasclass('o_address_format')] патчив тільки блок ліда, і в
+         нагоді підказок не було взагалі. Тому кожен блок патчиться окремо, а
+         якорем служить `name` вузла: воно однакове у 18.0 і 19.0 (на відміну
+         від `string`) і не залежить від порядку блоків у формі. -->
     <record id="crm_lead_view_form_geodata" model="ir.ui.view">
         <field name="name">crm.lead.form.geodata</field>
         <field name="model">crm.lead</field>
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
 
+            <!-- ========================= ЛІД ========================= -->
+
             <!-- Приховані контрольні поля перед адресним блоком (ліда) -->
-            <xpath expr="//div[hasclass('o_address_format')]" position="before">
+            <xpath expr="//group[@name='lead_partner']//div[hasclass('o_address_format')]" position="before">
                 <field name="has_geodata_credential" invisible="1"/>
                 <field name="geodata_autocomplete_active" invisible="1"/>
                 <field name="geodata_address_id" invisible="1"/>
@@ -21,11 +34,11 @@
                 <field name="country_code" invisible="1"/>
             </xpath>
 
-            <xpath expr="//div[hasclass('o_address_format')]" position="attributes">
+            <xpath expr="//group[@name='lead_partner']//div[hasclass('o_address_format')]" position="attributes">
                 <attribute name="class" add="o_geodata_address_grid" separator=" "/>
             </xpath>
 
-            <xpath expr="//div[hasclass('o_address_format')]//field[@name='city']" position="attributes">
+            <xpath expr="//group[@name='lead_partner']//div[hasclass('o_address_format')]//field[@name='city']" position="attributes">
                 <attribute name="widget">geodata_autocomplete</attribute>
                 <attribute name="options">{
                     'source_method': 'geodata_autocomplete_cities',
@@ -36,7 +49,7 @@
                 }</attribute>
             </xpath>
 
-            <xpath expr="//div[hasclass('o_address_format')]//field[@name='street']" position="attributes">
+            <xpath expr="//group[@name='lead_partner']//div[hasclass('o_address_format')]//field[@name='street']" position="attributes">
                 <attribute name="widget">geodata_autocomplete</attribute>
                 <attribute name="options">{
                     'source_method': 'geodata_autocomplete_streets',
@@ -48,7 +61,7 @@
                 }</attribute>
             </xpath>
 
-            <xpath expr="//div[hasclass('o_address_format')]//field[@name='state_id']" position="after">
+            <xpath expr="//group[@name='lead_partner']//div[hasclass('o_address_format')]//field[@name='state_id']" position="after">
                 <field name="area" class="o_geodata_addr_col" readonly="1" force_save="1"
                        invisible="country_code != 'UA'"/>
                 <field name="hromada" class="o_geodata_addr_col" readonly="1" force_save="1"
@@ -56,7 +69,70 @@
             </xpath>
 
             <!-- Індекс: лише індикатор «введено вручну» (без autocomplete). -->
-            <xpath expr="//div[hasclass('o_address_format')]//field[@name='zip']" position="attributes">
+            <xpath expr="//group[@name='lead_partner']//div[hasclass('o_address_format')]//field[@name='zip']" position="attributes">
+                <attribute name="widget">geodata_autocomplete</attribute>
+                <attribute name="options">{
+                    'verified_field': 'geodata_zip_verified',
+                    'hint_field': 'geodata_show_manual_hint'
+                }</attribute>
+            </xpath>
+
+            <!-- ======================== НАГОДА ======================== -->
+
+            <!-- Контрольні поля дублюються свідомо: блок ліда живе у групі, яку
+                 інші модулі можуть прибрати або перенести, а віджет читає ці
+                 поля із запису форми. Дублікати полів у формі легальні — сама
+                 форма crm.lead двічі містить partner_id і street. -->
+            <xpath expr="//page[@name='lead']//div[hasclass('o_address_format')]" position="before">
+                <field name="has_geodata_credential" invisible="1"/>
+                <field name="geodata_autocomplete_active" invisible="1"/>
+                <field name="geodata_address_id" invisible="1"/>
+                <field name="geodata_city_moniker" invisible="1"/>
+                <field name="geodata_street_moniker" invisible="1"/>
+                <field name="geodata_show_manual_hint" invisible="1"/>
+                <field name="geodata_city_verified" invisible="1"/>
+                <field name="geodata_street_verified" invisible="1"/>
+                <field name="geodata_house_verified" invisible="1"/>
+                <field name="geodata_zip_verified" invisible="1"/>
+                <field name="country_code" invisible="1"/>
+            </xpath>
+
+            <xpath expr="//page[@name='lead']//div[hasclass('o_address_format')]" position="attributes">
+                <attribute name="class" add="o_geodata_address_grid" separator=" "/>
+            </xpath>
+
+            <xpath expr="//page[@name='lead']//div[hasclass('o_address_format')]//field[@name='city']" position="attributes">
+                <attribute name="widget">geodata_autocomplete</attribute>
+                <attribute name="options">{
+                    'source_method': 'geodata_autocomplete_cities',
+                    'on_select_method': 'apply_address',
+                    'verified_field': 'geodata_city_verified',
+                    'hint_field': 'geodata_show_manual_hint',
+                    'min_chars': 3
+                }</attribute>
+            </xpath>
+
+            <xpath expr="//page[@name='lead']//div[hasclass('o_address_format')]//field[@name='street']" position="attributes">
+                <attribute name="widget">geodata_autocomplete</attribute>
+                <attribute name="options">{
+                    'source_method': 'geodata_autocomplete_streets',
+                    'on_select_method': 'apply_address',
+                    'verified_field': 'geodata_street_verified',
+                    'house_verified_field': 'geodata_house_verified',
+                    'hint_field': 'geodata_show_manual_hint',
+                    'min_chars': 3
+                }</attribute>
+            </xpath>
+
+            <xpath expr="//page[@name='lead']//div[hasclass('o_address_format')]//field[@name='state_id']" position="after">
+                <field name="area" class="o_geodata_addr_col" readonly="1" force_save="1"
+                       invisible="country_code != 'UA'"/>
+                <field name="hromada" class="o_geodata_addr_col" readonly="1" force_save="1"
+                       invisible="country_code != 'UA'"/>
+            </xpath>
+
+            <!-- Індекс: лише індикатор «введено вручну» (без autocomplete). -->
+            <xpath expr="//page[@name='lead']//div[hasclass('o_address_format')]//field[@name='zip']" position="attributes">
                 <attribute name="widget">geodata_autocomplete</attribute>
                 <attribute name="options">{
                     'verified_field': 'geodata_zip_verified',

@@ -6,8 +6,15 @@
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
 
+            <!-- УВАГА: у стандартній формі партнера ДВА адресні блоки — головна
+                 адреса й вбудована форма дочірньої адреси всередині child_ids
+                 (її патчить окремий набір xpath нижче). Odoo бере лише ПЕРШИЙ
+                 збіг, тож голий //div[hasclass('o_address_format')] влучав у
+                 головний блок тільки завдяки порядку вузлів у формі. Явно
+                 виключаємо піддерево child_ids, щоб перестановка блоків не
+                 перемкнула патч на дочірню адресу (так зламалась форма CRM). -->
             <!-- Приховані контрольні поля (стабільний xpath за іменами) -->
-            <xpath expr="//div[hasclass('o_address_format')]" position="before">
+            <xpath expr="//div[hasclass('o_address_format')][not(ancestor::field[@name='child_ids'])]" position="before">
                 <field name="has_geodata_credential" invisible="1"/>
                 <field name="geodata_autocomplete_active" invisible="1"/>
                 <field name="geodata_address_id" invisible="1"/>
@@ -23,12 +30,12 @@
 
             <!-- Детермінований порядок полів адреси: Місто, Область, Індекс,
                  Країна (через flex order у SCSS). -->
-            <xpath expr="//div[hasclass('o_address_format')]" position="attributes">
+            <xpath expr="//div[hasclass('o_address_format')][not(ancestor::field[@name='child_ids'])]" position="attributes">
                 <attribute name="class" add="o_geodata_address_grid" separator=" "/>
             </xpath>
 
             <!-- Вбудована автопідказка на місті -->
-            <xpath expr="//field[@name='city']" position="attributes">
+            <xpath expr="//div[hasclass('o_address_format')][not(ancestor::field[@name='child_ids'])]//field[@name='city']" position="attributes">
                 <attribute name="widget">geodata_autocomplete</attribute>
                 <attribute name="options">{
                     'source_method': 'geodata_autocomplete_cities',
@@ -40,7 +47,7 @@
             </xpath>
 
             <!-- Вбудована автопідказка на вулиці -->
-            <xpath expr="//field[@name='street']" position="attributes">
+            <xpath expr="//div[hasclass('o_address_format')][not(ancestor::field[@name='child_ids'])]//field[@name='street']" position="attributes">
                 <attribute name="widget">geodata_autocomplete</attribute>
                 <attribute name="options">{
                     'source_method': 'geodata_autocomplete_streets',
@@ -53,7 +60,7 @@
             </xpath>
 
             <!-- Район + Громада (заповнюються з API за шаблонами block_format_*). -->
-            <xpath expr="//div[hasclass('o_address_format')]//field[@name='state_id']" position="after">
+            <xpath expr="//div[hasclass('o_address_format')][not(ancestor::field[@name='child_ids'])]//field[@name='state_id']" position="after">
                 <field name="area" class="o_geodata_addr_col" readonly="1" force_save="1"
                        invisible="country_code != 'UA'"/>
                 <field name="hromada" class="o_geodata_addr_col" readonly="1" force_save="1"
@@ -61,7 +68,7 @@
             </xpath>
 
             <!-- Індекс: лише індикатор «введено вручну» (без autocomplete). -->
-            <xpath expr="//div[hasclass('o_address_format')]//field[@name='zip']" position="attributes">
+            <xpath expr="//div[hasclass('o_address_format')][not(ancestor::field[@name='child_ids'])]//field[@name='zip']" position="attributes">
                 <attribute name="widget">geodata_autocomplete</attribute>
                 <attribute name="options">{
                     'verified_field': 'geodata_zip_verified',
