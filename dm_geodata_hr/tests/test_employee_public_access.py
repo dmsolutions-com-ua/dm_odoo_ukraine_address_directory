@@ -43,9 +43,11 @@ class TestEmployeePublicAccess(TransactionCase):
         self.assertTrue(self._as_plain().work_contact_id)
 
     def test_plain_user_search_fetch_and_read(self):
+        # У 18.0 `field_names` у search_fetch обов'язковий (у 19.0 — ні).
         employees = self.env["hr.employee"].with_user(self.plain_user).search_fetch(
-            [("id", "=", self.employee.id)])
+            [("id", "=", self.employee.id)], ["name"])
         self.assertEqual(employees.ids, self.employee.ids)
+        self.assertTrue(employees.work_contact_id)
         values = self._as_plain().read([])[0]
         self.assertNotIn("area", values)
         self.assertNotIn("geodata_address_id", values)
